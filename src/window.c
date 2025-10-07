@@ -14,7 +14,7 @@ static struct {
     int cursorY;
 } __state = {0};
 
-int WindowOpen(int w, int h, const char *title, CCCP_WINDOW_FLAGS flags);
+int WindowOpen(int w, int h, const char *title, CCCP_WindowFlags flags);
 int WindowPoll(void);
 void WindowFlush(CCCP_Surface buffer);
 void WindowClose(void);
@@ -69,7 +69,11 @@ CCCP_CALLBACKS
     if (__state.CB##Callback) \
         __state.CB##Callback(__state.userdata, __VA_ARGS__)
 
-void CCCP_GetUserdata(void *userdata) {
+void* CCCP_GetUserdata(void *userdata) {
+    return __state.userdata;
+}
+
+void CCCP_SetUserdata(void *userdata) {
     __state.userdata = userdata;
 }
 
@@ -146,7 +150,7 @@ static const char* beforeunload_callback(int eventType, const void *reserved, vo
     return "Do you really want to leave the page?";
 }
 
-int WindowOpen(int w, int h, const char *title, CCCP_WINDOW_FLAGS flags) {
+int WindowOpen(int w, int h, const char *title, CCCP_WindowFlags flags) {
     emscripten_set_canvas_element_size(canvas, w, h);
     if (title)
         emscripten_set_window_title(title);
@@ -535,7 +539,7 @@ DEFAULT_PROC:
     return DefWindowProc(hWnd, message, wParam, lParam);
 }
 
-int WindowOpen(int w, int h, const char *title, CCCP_WINDOW_FLAGS flags) {
+int WindowOpen(int w, int h, const char *title, CCCP_WindowFlags flags) {
     RECT rect = {0};
     long windowFlags = WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX | WS_MAXIMIZEBOX;
     if (flags & WINDOW_FULLSCREEN) {
@@ -899,7 +903,7 @@ static void drawRect(id self, SEL _self, CGRect rect) {
     CGColorSpaceRelease(s);
 }
 
-int WindowOpen(int w, int h, const char *title, CCCP_WINDOW_FLAGS flags) {
+int WindowOpen(int w, int h, const char *title, CCCP_WindowFlags flags) {
     AutoreleasePool({
         __state.windowWidth = w;
         __state.windowHeight = h;
@@ -1461,7 +1465,7 @@ struct Hints {
     unsigned long status;
 };
 
-int WindowOpen(int w, int h, const char *title, CCCP_WINDOW_FLAGS flags) {
+int WindowOpen(int w, int h, const char *title, CCCP_WindowFlags flags) {
     if (!(__linux_state.display = XOpenDisplay(NULL)))
         return 0;
     __linux_state.root   = DefaultRootWindow(__linux_state.display);

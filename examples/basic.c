@@ -4,16 +4,16 @@
 
 // A CCCP_State should be defined in each scene. This structure can contain whatever variables and types you want, but it must be defined like this. Do not typedef the struct definition, as it is already typedef'd in cccp.h
 struct CCCP_State {
-    int clearColor;
+    color_t clearColor;
 };
 
-static CCCP_State* init(CCCP_Surface *framebuffer) {
+static CCCP_State* init(CCCP_Surface framebuffer) {
     // Called once when the program first starts
     // You must always create an instance of your CCCP_State definition
     // It must be allocated on the stack, not the heap
     // This object will be be used to keep track of things between reloads
     CCCP_State *state = malloc(sizeof(CCCP_State));
-    state->clearColor = RGB(255, 0, 0);
+    state->clearColor = rgb(255, 0, 0);
     // Return your CCCP_State so cccp can keep track of it
     return state;
 }
@@ -29,7 +29,7 @@ static void reload(CCCP_State *state) {
     // Here we change the `clearColor` field in our state to blue
     // If you rebuild the library, the screen will chang from red
     // to blue! Magic!
-    state->clearColor = RGB(0, 0, 255);
+    state->clearColor = rgb(0, 0, 255);
 }
 
 static void unload(CCCP_State *state) {
@@ -41,9 +41,9 @@ static int event(CCCP_State *state, CCCP_Event *e) {
     return 1;
 }
 
-static int tick(CCCP_State *state, CCCP_Surface *pbo, double delta) {
+static int tick(CCCP_State *state, CCCP_Surface pbo, double delta) {
     // Called every frame, this is your update callback
-    pbImageFill(pbo, state->clearColor);
+    bitmap_fill(pbo, state->clearColor);
     return 1;
 }
 

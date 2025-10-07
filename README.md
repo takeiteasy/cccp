@@ -2,6 +2,20 @@
 
 The *C* *C*reative *C*oding *P*roject
 
+## TODO
+
+- [X] Reimplement scene reloading
+- [ ] Image loading from file (and exporting) (stb + qoi)
+    - [ ] GIF/Video recording + exporting?
+- [ ] Generate noise surfaces
+- [ ] Other surface generators (gradients, checkerboards) 
+- [ ] Text rendering (font8x8 + stb_truetype)
+- [ ] Sound (raudio)
+- [ ] Shaders (multithreaded software renderer)
+- [ ] Dynamic rebuilding of scenes (dmon)
+- [ ] Packaging for different platforms?
+- [ ] 3D API? (using software rasterizer + software shaders)
+
 ## Dependencies
 
 - [nothings/stb](https://github.com/nothings/stb) [MIT/UNLICENSE]
