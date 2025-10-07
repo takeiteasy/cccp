@@ -11,40 +11,8 @@ else
 	endif
 endif
 
-default: all
+build:
+	$(CC) -g -o cccp$(PROGEXT) src/*.c -Ideps -fenable-matrix -lpthread -framework Cocoa
 
-BUILD=build
-CFLAGS = -Isrc -Ideps
-LINK = src/rng.c -L$(BUILD) -lpb
-
-$(BUILD)/:
-	mkdir -p $(BUILD)
-
-libpb: $(BUILD)/
-	$(CC) -shared -fpic $(CFLAGS) $(SYSFLAGS) src/$(BACKEND).c -o $(BUILD)/libpb.$(LIBEXT)
-
-program: libpb
-	$(CC) $(CFLAGS) src/fwp.c $(LINK) -o $(BUILD)/fwp$(PROGEXT)
-
-test-web: libpb
-	emcc $(CFLAGS) src/pb_emscripten.c templates/pb_boilerplate.c -o $(BUILD)/fwp_web.html
-
-SRC := scenes
-BIN := build
-TARGETS := $(foreach file,$(foreach src,$(wildcard $(SRC)/*.c),$(notdir $(src))),$(patsubst %.c,$(BIN)/%.$(LIBEXT),$(file)))
-
-.PHONY: FORCE scenes
-
-FORCE: ;
-
-$(BIN)/%.$(LIBEXT): $(SRC)/%.c FORCE | $(BIN)
-	$(CC) -shared -fpic $(CFLAGS) $(LINK) -o $@ $<
-
-scenes: $(TARGETS)
-
-all: program scenes
-
-clean:
-	$(RM) -rf $(BUILD)
-
-.PHONY: program libpb clean
+run:
+	./cccp$(PROGEXT)

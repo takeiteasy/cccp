@@ -1,6 +1,1 @@
-build/
-*.xcodeproj
-.DS_Store
-*.plist
-*.obj
-docs.sh
+cccp

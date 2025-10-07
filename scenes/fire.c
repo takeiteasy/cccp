@@ -1,4 +1,4 @@
-#include "fwp.h"
+#include "cccp.h"
 #include <stdlib.h> // malloc
 
 #define BASE_HEIGHT 8
@@ -16,41 +16,41 @@ static int FIRE_PALETTE[] = {
     805306368
 };
 
-struct fwpState {
+struct CCCP_State {
     int dummy;
 };
 
-static void DrawFireBase(pbImage *framebuffer) {
+static void DrawFireBase(CCCP_Surface *framebuffer) {
     for (int x = 0; x < framebuffer->width; x++)
         for (int y = 0; y < BASE_HEIGHT; y++)
             pbImagePSet(framebuffer, x, framebuffer->height - (y + 1), FIRE_PALETTE[0]);
 }
 
-static fwpState* init(pbImage *framebuffer) {
-    fwpState *state = malloc(sizeof(fwpState));
+static CCCP_State* init(CCCP_Surface *framebuffer) {
+    CCCP_State *state = malloc(sizeof(CCCP_State));
     rngInit(0);
     DrawFireBase(framebuffer);
     return state;
 }
 
-static void deinit(fwpState *state) {
+static void deinit(CCCP_State *state) {
     if (state)
         free(state);
 }
 
-static void reload(fwpState *state) {
+static void reload(CCCP_State *state) {
 
 }
 
-static void unload(fwpState *state) {
+static void unload(CCCP_State *state) {
 
 }
 
-static int event(fwpState *state, pbEvent *e) {
+static int event(CCCP_State *state, CCCP_Event *e) {
     return 1;
 }
 
-static int tick(fwpState *state, pbImage *framebuffer, double delta) {
+static int tick(CCCP_State *state, CCCP_Surface *framebuffer, double delta) {
     DrawFireBase(framebuffer);
     for (int i = 0; i < framebuffer->width * FIRE_HEIGHT; i++) {
         int x = rngRandomIntRange(0, framebuffer->width);
@@ -74,7 +74,7 @@ static int tick(fwpState *state, pbImage *framebuffer, double delta) {
     return 1;
 }
 
-const fwpScene scene = {
+const CCCP_Scene scene = {
     .windowWidth = 320,
     .windowHeight = 240,
     .windowTitle = "AHHHHH! FIRE!",

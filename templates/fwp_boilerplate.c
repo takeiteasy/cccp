@@ -1,30 +1,30 @@
-// Firstly include the fwp header, which contains everything we need
-#include "fwp.h"
+// Firstly include the cccp header, which contains everything we need
+#include "cccp.h"
 #include <stdlib.h> // malloc
 
-// A fwpState should be defined in each scene. This structure can contain whatever variables and types you want, but it must be defined like this. Do not typedef the struct definition, as it is already typedef'd in fwp.h
-struct fwpState {
+// A CCCP_State should be defined in each scene. This structure can contain whatever variables and types you want, but it must be defined like this. Do not typedef the struct definition, as it is already typedef'd in cccp.h
+struct CCCP_State {
     int clearColor;
 };
 
-static fwpState* init(pbImage *framebuffer) {
+static CCCP_State* init(CCCP_Surface *framebuffer) {
     // Called once when the program first starts
-    // You must always create an instance of your fwpState definition
+    // You must always create an instance of your CCCP_State definition
     // It must be allocated on the stack, not the heap
     // This object will be be used to keep track of things between reloads
-    fwpState *state = malloc(sizeof(fwpState));
+    CCCP_State *state = malloc(sizeof(CCCP_State));
     state->clearColor = RGB(255, 0, 0);
-    // Return your fwpState so fwp can keep track of it
+    // Return your CCCP_State so cccp can keep track of it
     return state;
 }
 
-static void deinit(fwpState *state) {
+static void deinit(CCCP_State *state) {
     // Only called when the program is exiting
     if (state)
         free(state);
 }
 
-static void reload(fwpState *state) {
+static void reload(CCCP_State *state) {
     // Called when the dynamic has been updated + reloaded
     // Here we change the `clearColor` field in our state to blue
     // If you rebuild the library, the screen will chang from red
@@ -32,25 +32,25 @@ static void reload(fwpState *state) {
     state->clearColor = RGB(0, 0, 255);
 }
 
-static void unload(fwpState *state) {
+static void unload(CCCP_State *state) {
     // Called when dynamic library has been unloaded
 }
 
-static int event(fwpState *state, pbEvent *e) {
+static int event(CCCP_State *state, CCCP_Event *e) {
     // Called on window event
     return 1;
 }
 
-static int tick(fwpState *state, pbImage *pbo, double delta) {
+static int tick(CCCP_State *state, CCCP_Surface *pbo, double delta) {
     // Called every frame, this is your update callback
     pbImageFill(pbo, state->clearColor);
     return 1;
 }
 
-// So fwp knows where your callbacks are a `scene` definition must be made
-// The definition should be always be called scene. If the name changes fwp
+// So cccp knows where your callbacks are a `scene` definition must be made
+// The definition should be always be called scene. If the name changes cccp
 // won't know where to look!
-const fwpScene scene = {
+const CCCP_Scene scene = {
     .init = init,
     .deinit = deinit,
     .reload = reload,
