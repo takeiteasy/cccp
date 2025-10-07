@@ -1,3 +1,0 @@
-[submodule "deps/paul"]
-	path = deps/paul
-	url = git@github.com:takeiteasy/paul.git

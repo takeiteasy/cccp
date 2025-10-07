@@ -4,10 +4,11 @@
 extern "C" {
 #endif
 
-#include "paul/paul_color.h"
-#include "paul/paul_bitmap.h"
-#include "paul/paul_math.h"
-#include "paul/paul_threads.h"
+#include "paul_color.h"
+#include "paul_bitmap.h"
+#include "paul_math.h"
+#include "paul_threads.h"
+#include "paul_os.h"
 
 typedef enum {
     WINDOW_RESIZABLE          = 1 << 0,
