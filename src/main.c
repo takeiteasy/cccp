@@ -1,9 +1,6 @@
 #define PAUL_IMPLEMENTATION
 #include "cccp.h"
-
-extern int WindowOpen(int w, int h, const char *title, CCCP_WindowFlags flags);
-extern int WindowPoll(void);
-extern void WindowClose(void);
+#include "internal.h"
 
 #ifndef WINDOW_WIDTH
 #define WINDOW_WIDTH 640
@@ -162,16 +159,16 @@ static int ReloadLibrary(const char *path) {
         goto BAIL;
     if (!state.state) {
         if (state.scene->windowWidth > 0 && state.scene->windowHeight > 0)
-            CCCP_SetWindowSize(state.scene->windowWidth, state.scene->windowHeight);
+            WindowSetSize(state.scene->windowWidth, state.scene->windowHeight);
         if (state.scene->windowTitle)
-            CCCP_SetWindowTitle(state.scene->windowTitle);
+            WindowSetTitle(state.scene->windowTitle);
         if (!(state.state = state.scene->init(state.buffer)))
             goto BAIL;
     } else {
         if (state.scene->windowWidth > 0 && state.scene->windowHeight > 0)
-            CCCP_SetWindowSize(state.scene->windowWidth, state.scene->windowHeight);
+            WindowSetSize(state.scene->windowWidth, state.scene->windowHeight);
         if (state.scene->windowTitle)
-            CCCP_SetWindowTitle(state.scene->windowTitle);
+            WindowSetTitle(state.scene->windowTitle);
         if (state.scene->reload)
             state.scene->reload(state.state);
     }
@@ -189,11 +186,11 @@ BAIL:
     return 0;
 }
 
-#define pbInputCallback(E)                    \
+#define CCCP_Callback(E)                    \
     if (state.scene->event)                   \
         state.scene->event(state.state, &(E)) \
 
-static void pbInputKeyboard(void *userdata, int key, int modifier, int isDown) {
+static void CCCP_Keyboard(void *userdata, int key, int modifier, int isDown) {
     CCCP_Event e = {
         .type = KeyboardEvent,
         .keyboard = {
@@ -202,10 +199,10 @@ static void pbInputKeyboard(void *userdata, int key, int modifier, int isDown) {
         },
         .modifier = modifier
     };
-    pbInputCallback(e);
+    CCCP_Callback(e);
 }
 
-static void pbInputMouseButton(void *userdata, int button, int modifier, int isDown) {
+static void CCCP_MouseButton(void *userdata, int button, int modifier, int isDown) {
     CCCP_Event e = {
         .type = MouseButtonEvent,
         .mouse = {
@@ -214,10 +211,10 @@ static void pbInputMouseButton(void *userdata, int button, int modifier, int isD
         },
         .modifier = modifier
     };
-    pbInputCallback(e);
+    CCCP_Callback(e);
 }
 
-static void pbInputMouseMove(void *userdata, int x, int y, float dx, float dy) {
+static void CCCP_MouseMove(void *userdata, int x, int y, float dx, float dy) {
     CCCP_Event e = {
         .type = MouseMoveEvent,
         .mouse = {
@@ -229,10 +226,10 @@ static void pbInputMouseMove(void *userdata, int x, int y, float dx, float dy) {
             }
         }
     };
-    pbInputCallback(e);
+    CCCP_Callback(e);
 }
 
-static void pbInputMouseScroll(void *userdata, float dx, float dy, int modifier) {
+static void CCCP_MouseScroll(void *userdata, float dx, float dy, int modifier) {
     CCCP_Event e = {
         .type = MouseScrollEvent,
         .mouse = {
@@ -242,20 +239,20 @@ static void pbInputMouseScroll(void *userdata, float dx, float dy, int modifier)
             }
         }
     };
-    pbInputCallback(e);
+    CCCP_Callback(e);
 }
 
-static void pbInputFocus(void *userdata, int isFocused) {
+static void CCCP_Focus(void *userdata, int isFocused) {
     CCCP_Event e = {
         .type = FocusEvent,
         .window = {
             .focused = isFocused
         }
     };
-    pbInputCallback(e);
+    CCCP_Callback(e);
 }
 
-static void pbInputResized(void *userdata, int w, int h) {
+static void CCCP_Resized(void *userdata, int w, int h) {
     CCCP_Event e = {
         .type = ResizedEvent,
         .window = {
@@ -265,17 +262,7 @@ static void pbInputResized(void *userdata, int w, int h) {
             }
         }
     };
-    pbInputCallback(e);
-}
-
-static void pbInputClosed(void *userdata) {
-    CCCP_Event e = {
-        .type = ClosedEvent,
-        .window = {
-            .closed = true
-        }
-    };
-    pbInputCallback(e);
+    CCCP_Callback(e);
 }
 
 int main(int argc, char *argv[]) {
@@ -358,8 +345,7 @@ int main(int argc, char *argv[]) {
     if (!ReloadLibrary(state.args.path))
         return 0;
 
-#define X(NAME, _) pbInput##NAME,
-    CCCP_SetCallbacks(CCCP_CALLBACKS NULL);
+#define X(NAME, _) CCCP_Set
 #undef X
 
     while (WindowPoll()) {
@@ -368,7 +354,7 @@ int main(int argc, char *argv[]) {
             break;
         if (!state.scene->tick(state.state, state.buffer, 0.f))
             break;
-        CCCP_RenderSurface(state.buffer);
+        WindowFlush(state.buffer);
     }
     state.scene->deinit(state.state);
     if (state.handle)

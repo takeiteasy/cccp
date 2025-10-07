@@ -1,5 +1,4 @@
 #include "cccp.h"
-#include <assert.h>
 
 static struct {
 #define X(NAME, ARGS) void(*NAME##Callback)ARGS;
@@ -19,48 +18,11 @@ int WindowPoll(void);
 void WindowFlush(CCCP_Surface buffer);
 void WindowClose(void);
 void WindowSetSize(unsigned int w, unsigned int h);
-void WindowSetTItle(const char *title);
+void WindowSetTitle(const char *title);
 
-void CCCP_RenderSurface(CCCP_Surface buffer) {
-    WindowFlush(buffer);
-}
-
-void CCCP_SetWindowTitle(const char *title) {
-    WindowSetTItle(title);
-}
-
-void CCCP_GetWindowSize(unsigned int *w, unsigned int *h) {
-    if (w)
-        *w = __state.windowWidth;
-    if (h)
-        *h = __state.windowHeight;
-}
-
-void CCCP_SetWindowSize(unsigned int w, unsigned int h) {
-    WindowSetSize(w, h);
-}
-
-void CCCP_GetMousePosition(int *x, int *y) {
-    if (x)
-        *x = __state.cursorX;
-    if (y)
-        *y = __state.cursorY;
-}
-
-#define X(NAME, ARGS) \
-    void(*NAME##Callback)ARGS,
-void CCCP_SetCallbacks(CCCP_CALLBACKS void* userdata) {
-#undef X
-#define X(NAME, ARGS) \
-    __state.NAME##Callback = NAME##Callback;
-    CCCP_CALLBACKS
-#undef X
-    __state.userdata = userdata;
-}
-
-#define X(NAME, ARGS)                                    \
-    void CCCP_Set##NAME##Callback(void(*NAME##Callback)ARGS) { \
-        __state.NAME##Callback = NAME##Callback;      \
+#define X(NAME, ARGS)                                           \
+    void CCCP_Set##NAME##Callback(void(*NAME##Callback)ARGS) {  \
+        __state.NAME##Callback = NAME##Callback;                \
     }
 CCCP_CALLBACKS
 #undef X
@@ -69,174 +31,7 @@ CCCP_CALLBACKS
     if (__state.CB##Callback) \
         __state.CB##Callback(__state.userdata, __VA_ARGS__)
 
-void* CCCP_GetUserdata(void *userdata) {
-    return __state.userdata;
-}
-
-void CCCP_SetUserdata(void *userdata) {
-    __state.userdata = userdata;
-}
-
-#ifdef __EMSCRIPTEN__
-#include <emscripten.h>
-#include <emscripten/html5.h>
-
-#define canvas "#canvas"
-static struct {
-    int screenW, screenH;
-    int canvasW, canvasH;
-    int mouseInCanvas;
-} __emcc_state = {0};
-
-static int TranslateWebMod(int ctrl, int shift, int alt, int meta) {
-    return (ctrl ? KEY_MOD_CONTROL : 0) | (shift ? KEY_MOD_SHIFT : 0) | (alt ? KEY_MOD_ALT : 0) | (meta ? KEY_MOD_SUPER : 0);
-}
-
-static EM_BOOL key_callback(int type, const EmscriptenKeyboardEvent* e, void* user_data) {
-    int mod = TranslateWebMod(e->ctrlKey, e->shiftKey, e->altKey, e->metaKey);
-    __callback(Keyboard, e->keyCode, mod, type == EMSCRIPTEN_EVENT_KEYDOWN);
-    return !(e->keyCode == 82 && mod == KEY_MOD_SUPER);
-}
-
-static EM_BOOL mouse_callback(int type, const EmscriptenMouseEvent* e, void* user_data) {
-    switch (type) {
-        case EMSCRIPTEN_EVENT_MOUSEDOWN:
-            if (__emcc_state.mouseInCanvas && e->buttons != 0)
-                __callback(MouseButton, e->button + 1, TranslateWebMod(e->ctrlKey, e->shiftKey, e->altKey, e->metaKey), 1);
-            break;
-        case EMSCRIPTEN_EVENT_MOUSEUP:
-            if (__emcc_state.mouseInCanvas)
-                __callback(MouseButton, e->button + 1, TranslateWebMod(e->ctrlKey, e->shiftKey, e->altKey, e->metaKey), 0);
-            break;
-        case EMSCRIPTEN_EVENT_MOUSEMOVE:
-            if (__emcc_state.mouseInCanvas)
-                __callback(MouseMove, e->clientX - (__emcc_state.screenW / 2) + (__emcc_state.canvasW / 2), e->clientY, e->movementX, e->movementY);
-            break;
-        case EMSCRIPTEN_EVENT_MOUSEENTER:
-            __emcc_state.mouseInCanvas = 1;
-            return 1;
-        case EMSCRIPTEN_EVENT_MOUSELEAVE:
-            __emcc_state.mouseInCanvas = 0;
-            return 0;
-        case EMSCRIPTEN_EVENT_CLICK:
-        case EMSCRIPTEN_EVENT_DBLCLICK:
-        default:
-            return 0;
-    }
-    return 1;
-}
-
-static EM_BOOL wheel_callback(int type, const EmscriptenWheelEvent* e, void* user_data) {
-    __callback(MouseScroll, e->deltaX, e->deltaY, TranslateWebMod(e->mouse.ctrlKey, e->mouse.shiftKey, e->mouse.altKey, e->mouse.metaKey));
-    return 1;
-}
-
-static EM_BOOL uievent_callback(int type, const EmscriptenUiEvent* e, void* user_data) {
-    __emcc_state.screenW = e->documentBodyClientWidth;
-    __emcc_state.screenH = e->documentBodyClientHeight;
-    emscripten_get_element_css_size(canvas, (double*)&__emcc_state.canvasW, (double*)&__emcc_state.canvasH);
-    __state.windowWidth = __emcc_state.canvasW;
-    __state.windowHeight = __emcc_state.canvasH;
-    __callback(Resized, __emcc_state.screenW, __emcc_state.screenH);
-    return 1;
-}
-
-static EM_BOOL focusevent_callback(int type, const EmscriptenFocusEvent* e, void* user_data) {
-    __callback(Focus, type == EMSCRIPTEN_EVENT_FOCUS);
-    return 1;
-}
-
-static const char* beforeunload_callback(int eventType, const void *reserved, void *userData) {
-    return "Do you really want to leave the page?";
-}
-
-int WindowOpen(int w, int h, const char *title, CCCP_WindowFlags flags) {
-    emscripten_set_canvas_element_size(canvas, w, h);
-    if (title)
-        emscripten_set_window_title(title);
-    __state.windowWidth = w;
-    __state.windowHeight = h;
-
-    emscripten_set_keypress_callback(EMSCRIPTEN_EVENT_TARGET_WINDOW, 0, 1, key_callback);
-    emscripten_set_keydown_callback(EMSCRIPTEN_EVENT_TARGET_WINDOW, 0, 1, key_callback);
-    emscripten_set_keyup_callback(EMSCRIPTEN_EVENT_TARGET_WINDOW, 0, 1, key_callback);
-
-    emscripten_set_click_callback(canvas, 0, 1, mouse_callback);
-    emscripten_set_mousedown_callback(canvas, 0, 1, mouse_callback);
-    emscripten_set_mouseup_callback(canvas, 0, 1, mouse_callback);
-    emscripten_set_dblclick_callback(canvas, 0, 1, mouse_callback);
-    emscripten_set_mousemove_callback(canvas, 0, 1, mouse_callback);
-    emscripten_set_mouseenter_callback(canvas, 0, 1, mouse_callback);
-    emscripten_set_mouseleave_callback(canvas, 0, 1, mouse_callback);
-    emscripten_set_mouseover_callback(canvas, 0, 1, mouse_callback);
-    emscripten_set_mouseout_callback(canvas, 0, 1, mouse_callback);
-
-    emscripten_set_wheel_callback(EMSCRIPTEN_EVENT_TARGET_WINDOW, 0, 1, wheel_callback);
-
-    emscripten_set_resize_callback(EMSCRIPTEN_EVENT_TARGET_WINDOW, 0, 1, uievent_callback);
-    emscripten_set_scroll_callback(EMSCRIPTEN_EVENT_TARGET_WINDOW, 0, 1, uievent_callback);
-
-    emscripten_set_blur_callback(EMSCRIPTEN_EVENT_TARGET_WINDOW, 0, 1, focusevent_callback);
-    emscripten_set_focus_callback(EMSCRIPTEN_EVENT_TARGET_WINDOW, 0, 1, focusevent_callback);
-    emscripten_set_focusin_callback(EMSCRIPTEN_EVENT_TARGET_WINDOW, 0, 1, focusevent_callback);
-    emscripten_set_focusout_callback(EMSCRIPTEN_EVENT_TARGET_WINDOW, 0, 1, focusevent_callback);
-
-    __state.running = 1;
-    return 1;
-}
-
-int WindowPoll(void) {
-    // Nothing to do here
-    return 1;
-}
-
-void WindowFlush(CCCP_Surface buffer) {
-    if (!buffer)
-        return;
-    int w, h;
-    bitmap_size(buffer, &w, &h);
-    if (!w || !h)
-        return;
-    EM_ASM({
-        var w = $0;
-        var h = $1;
-        var buf = $2;
-        var src = buf >> 2;
-        var canvas = document.getElementById("canvas");
-        var ctx = canvas.getContext("2d");
-        var img = ctx.createImageData(w, h);
-        var data = img.data;
-
-        var i = 0;
-        var j = data.length;
-        while (i < j) {
-            var val = HEAP32[src];
-            data[i+0] = (val >> 16) & 0xFF;
-            data[i+1] = (val >> 8) & 0xFF;
-            data[i+2] = val & 0xFF;
-            data[i+3] = 0xFF;
-            src++;
-            i += 4;
-        }
-
-        ctx.putImageData(img, 0, 0);
-    }, w, h, buffer);
-}
-
-void WindowClose(void) {
-    // Nothing to do here
-}
-
-void WindowSetSize(unsigned int w, unsigned int h) {
-    __state.windowWidth = __emcc_state.canvasW = w;
-    __state.windowHeight = __emcc_state.canvasH = h;
-    emscripten_set_element_css_size(canvas, (double)w, (double)h);
-}
-
-void WindowSetTItle(const char *title) {
-    emscripten_set_window_title(title);
-}
-#elif defined(_WIN32)
+#if defined(_WIN32)
 #define NOMINMAX
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
@@ -439,8 +234,6 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) 
             break;
         case WM_DESTROY:
         case WM_CLOSE:
-            if (__state.ClosedCallback)
-                __state.ClosedCallback(__state.userdata);
             __state.running = 0;
             break;
         case WM_SIZE:
@@ -676,7 +469,7 @@ void WindowSetSize(unsigned int w, unsigned int h) {
     SetWindowPos(__wangblows_state.hwnd, HWND_TOP, 0, 0, w, h, SWP_SHOWWINDOW | SWP_FRAMECHANGED);
 }
 
-void WindowSetTItle(const char *title) {
+void WindowSetTitle(const char *title) {
     SetWindowText(state.hwnd, title);
 }
 #elif defined(__APPLE__)
@@ -847,8 +640,6 @@ static NSUInteger applicationShouldTerminate(id self, SEL _sel, id sender) {
 }
 
 static void windowWillClose(id self, SEL _sel, id notification) {
-    if (__state.ClosedCallback)
-        __state.ClosedCallback(__state.userdata);
     __state.running = 0;
 }
 
@@ -1428,7 +1219,7 @@ void WindowSetSize(unsigned int w, unsigned int h) {
     ObjC(void, NSRect, BOOL, BOOL)(__mac_state.window, sel(setFrame:display:animate:), frame, YES, YES);
 }
 
-void WindowSetTItle(const char *title) {
+void WindowSetTitle(const char *title) {
     AutoreleasePool({
         id titleStr = ObjC(id, const char*)(class(NSString), sel(stringWithUTF8String:), title);
         ObjC(void, id)(__mac_state.window, sel(setTitle:), titleStr);
@@ -1905,7 +1696,7 @@ void WindowSetSize(unsigned int w, unsigned int h) {
     XResizeWindow(__linux_state.display, __linux_state.window, w, h);
 }
 
-void WindowSetTItle(const char *title) {
+void WindowSetTitle(const char *title) {
     Atom nameAtom = XInternAtom(__linux_state.display, "WM_NAME", 0);
     XChangeProperty(__linux_state.display, __linux_state.window, nameAtom, XA_STRING, 8, PropModeReplace, title, strlen(title));
 }

@@ -43,7 +43,8 @@ static int event(CCCP_State *state, CCCP_Event *e) {
 
 static int tick(CCCP_State *state, CCCP_Surface pbo, double delta) {
     // Called every frame, this is your update callback
-    bitmap_fill(pbo, state->clearColor);
+    CCCP_ClearSurface(pbo, state->clearColor);
+    CCCP_DrawRect(pbo, 50, 50, 50, 50, rgb(255, 255, 255), true);
     return 1;
 }
 

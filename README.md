@@ -4,17 +4,20 @@ The *C* *C*reative *C*oding *P*roject
 
 ## TODO
 
-- [X] ~~Reimplement scene reloading~~
-- [X] ~~Image loading from file (and exporting) (stb + qoi)~~
-    - [ ] GIF/Video recording + exporting?
+- [X] ~~Reimplement dylib reloading~~
+- [X] ~~Image loading from file (and exporting) (stb_image + qoi)~~
+    - [ ] GIF/Video recording/exporting?
+    - [ ] Export surface to image file (stb_image_write + qoi)
+- [ ] Shaders (multithreaded software renderer)
 - [ ] Generate noise surfaces
 - [ ] Other surface generators (gradients, checkerboards) 
 - [ ] Text rendering (font8x8 + stb_truetype)
+- [ ] Target FPS control
 - [ ] Sound (raudio)
-- [ ] Shaders (multithreaded software renderer)
 - [ ] Dynamic rebuilding of scenes (dmon)
 - [ ] Packaging for different platforms?
 - [ ] 3D API? (using software rasterizer + software shaders)
+- [ ] Export web builds (emscripten) (no dynamic loading of scenes)
 
 ## Dependencies
 

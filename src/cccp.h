@@ -45,8 +45,7 @@ typedef enum {
     X(MouseMove,    (void*, int, int, float, float)) \
     X(MouseScroll,  (void*, float, float, int))      \
     X(Resized,      (void*, int, int))               \
-    X(Focus,        (void*, int))                    \
-    X(Closed,       (void*))
+    X(Focus,        (void*, int))
 
 typedef struct CCCP_State CCCP_State;
 
@@ -85,6 +84,14 @@ typedef struct {
 typedef bitmap_t CCCP_Surface;
 typedef color_t CCCP_Color;
 
+// Shader function type: (fragcoord, resolution, time, userdata) -> color
+typedef vec4(*CCCP_ShaderFunc)(vec2, vec2, float, void*);
+
+typedef struct {
+    CCCP_ShaderFunc func;
+    thrd_pool_t *pool;
+} CCCP_Shader;
+
 typedef struct {
     int windowWidth;
     int windowHeight;
@@ -98,25 +105,6 @@ typedef struct {
     int(*event)(CCCP_State*, CCCP_Event*);
     int(*tick)(CCCP_State*, CCCP_Surface, double);
 } CCCP_Scene;
-
-void CCCP_RenderSurface(CCCP_Surface buffer);
-
-void CCCP_SetWindowTitle(const char *title);
-void CCCP_GetWindowSize(unsigned int *w, unsigned int *h);
-void CCCP_SetWindowSize(unsigned int w, unsigned int h);
-void CCCP_GetMousePosition(int *x, int *y);
-
-#define X(NAME, ARGS) \
-    void(*NAME##Callback)ARGS,
-void CCCP_SetCallbacks(CCCP_CALLBACKS void *userdata);
-#undef X
-#define X(NAME, ARGS) \
-    void CCCP_Set##NAME##Callback(void(*NAME##Callback)ARGS);
-CCCP_CALLBACKS
-#undef X
-// For use in callbacks, this is set by CCCP_SetCallbacks or CCCP_SetUserdata
-void* CCCP_GetUserdata(void *userdata);
-void CCCP_SetUserdata(void *userdata);
 
 CCCP_Surface CCCP_NewSurface(unsigned int w, unsigned int h, color_t clearColor);
 CCCP_Surface CCCP_SurfaceFromMemory(const void* data, int width, int height, bitmap_format_t format);
@@ -143,6 +131,10 @@ CCCP_Surface CCCP_ResizeSurface(CCCP_Surface surface, unsigned int w, unsigned i
 CCCP_Surface CCCP_RotateSurface(CCCP_Surface surface, float angle);
 CCCP_Surface CCCP_FlipSurface(CCCP_Surface surface, bool horizontal, bool vertical);
 CCCP_Surface CCCP_ClipSurface(CCCP_Surface surface, int x, int y, int w, int h);
+
+CCCP_Shader CCCP_NewShader(CCCP_ShaderFunc func, int numThreads);
+void CCCP_DestroyShader(CCCP_Shader shader);
+void CCCP_ApplyShader(CCCP_Surface surface, CCCP_Shader shader, void* userdata);
 
 #ifdef __cplusplus
 }
