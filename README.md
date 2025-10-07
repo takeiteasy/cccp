@@ -4,8 +4,8 @@ The *C* *C*reative *C*oding *P*roject
 
 ## TODO
 
-- [X] Reimplement scene reloading
-- [ ] Image loading from file (and exporting) (stb + qoi)
+- [X] ~~Reimplement scene reloading~~
+- [X] ~~Image loading from file (and exporting) (stb + qoi)~~
     - [ ] GIF/Video recording + exporting?
 - [ ] Generate noise surfaces
 - [ ] Other surface generators (gradients, checkerboards) 

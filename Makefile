@@ -10,7 +10,6 @@ else
 		LIBEXT=dylib
 		CFLAGS:=-g -Wall -Wno-missing-braces -fenable-matrix -Ideps
 		LINKER:=-lpthread -framework Cocoa
-
 	else ifeq ($(UNAME),Linux)
 		LIBEXT=so
 		CFLAGS:=-g -Wall -Wno-missing-braces -fenable-matrix -Ideps
@@ -39,7 +38,8 @@ run:
 clean:
 	$(RM) $(OBJS)
 
-veryclean: clean
+veryclean:
+	$(RM) $(OBJS)
 	$(RM) -r $(BIN)/**
 
 FORCE: ;
@@ -49,6 +49,6 @@ $(BIN)/%.$(LIBEXT): $(SCENES)/%.c FORCE | $(BIN)
 
 scenes: $(TARGETS)
 
-all: $(OUT) scenes
+all: veryclean $(OUT) scenes clean
 
 .PHONY: clean veryclean all scenes run

@@ -1,4 +1,8 @@
 #include "cccp.h"
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb_image.h"
+#define QOI_IMPLEMENTATION
+#include "qoi.h"
 
 CCCP_Surface CCCP_NewSurface(unsigned int w, unsigned int h, color_t clearColor) {
     return bitmap_empty(w, h, clearColor);
@@ -9,8 +13,35 @@ CCCP_Surface CCCP_SurfaceFromMemory(const void* data, int width, int height, bit
 }
 
 CCCP_Surface CCCP_SurfaceFromFile(const char* filename) {
-    return NULL; // TODO (stb+qoi)
-};
+    unsigned char magic[4] = { 'q', 'o', 'i', 'f' };
+    unsigned char *data = NULL;
+    int width,  height;
+    bool is_qoi = false;
+    if (memcmp(filename, magic, 4) == 0) {
+        qoi_desc desc;
+        if (!(data = qoi_read(filename, &desc, 4)))
+            return NULL;
+        width = desc.width;
+        height = desc.height;
+        is_qoi = true;
+    } else {
+        int c;
+        if (!(data = stbi_load(filename, &width, &height, &c, 4)))
+            return NULL;
+    }
+
+    CCCP_Surface bmp = CCCP_NewSurface(width, height, (color_t){0.0f, 0.0f, 0.0f, 0.0f});
+    if (!bmp)
+        return NULL;
+    for (int y = 0; y < height; y++)
+        for (int x = 0; x < width; x++) {
+            int i = (y * width + x) * 4;
+            CCCP_SetPixel(bmp, x, y, (color_t){ data[i], data[i + 1], data[i + 2], data[i + 3] });
+        }
+    if (data)
+        free(data);
+    return bmp;
+}
 
 CCCP_Surface CCCP_CopySurface(CCCP_Surface surface) {
     return bitmap_dupe(surface);
