@@ -43,10 +43,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-struct CCCP_AudioContext {
-    float volume;
-};
-
 static struct {
 #if defined(PLATFORM_WINDOWS)
     FILETIME writeTime;
@@ -142,7 +138,7 @@ static int ReloadLibrary(const char *path) {
 
     if (state.handle) {
         if (state.scene->unload)
-            state.scene->unload(state.state);
+            state.scene->unload(state.state, state.audio);
         dlclose(state.handle);
     }
 
@@ -167,7 +163,7 @@ static int ReloadLibrary(const char *path) {
             WindowSetSize(state.scene->windowWidth, state.scene->windowHeight);
         if (state.scene->windowTitle)
             WindowSetTitle(state.scene->windowTitle);
-        if (!(state.state = state.scene->init(state.buffer)))
+        if (!(state.state = state.scene->init(state.buffer, state.audio)))
             goto BAIL;
     } else {
         if (state.scene->windowWidth > 0 && state.scene->windowHeight > 0)
@@ -175,7 +171,7 @@ static int ReloadLibrary(const char *path) {
         if (state.scene->windowTitle)
             WindowSetTitle(state.scene->windowTitle);
         if (state.scene->reload)
-            state.scene->reload(state.state);
+            state.scene->reload(state.state, state.audio);
     }
     return 1;
 
@@ -191,9 +187,9 @@ BAIL:
     return 0;
 }
 
-#define CCCP_Callback(E)                    \
-    if (state.scene->event)                   \
-        state.scene->event(state.state, &(E)) \
+#define CCCP_Callback(E)    \
+    if (state.scene->event) \
+        state.scene->event(state.state, &(E), state.audio)
 
 static void CCCP_Keyboard(void *userdata, int key, int modifier, int isDown) {
     CCCP_Event e = {
@@ -345,8 +341,6 @@ int main(int argc, char *argv[]) {
     }
 
     InitAudioDevice();
-    state.audio = malloc(sizeof(CCCP_AudioContext));
-    state.audio->volume = 1.0f;
 
     if (!(state.buffer = CCCP_NewSurface(state.args.width, state.args.height, rgb(0, 0, 0))))
         return 0;
@@ -362,12 +356,20 @@ int main(int argc, char *argv[]) {
         CCCP_ClearSurface(state.buffer, state.scene->clearColor);
         if (!ReloadLibrary(state.args.path))
             break;
+        // TODO: Loop through music streams and update them
+        CCCP_HashEntry* entry = state.audio->music->buckets;
+        while (entry) {
+            Music *music = (Music*)entry->value;
+            if (music && IsMusicStreamPlaying(*music))
+                UpdateMusicStream(*music);
+            entry = entry->next;
+        }
         if (!state.scene->tick(state.state, state.buffer, state.audio, 0.f))
             break;
         WindowFlush(state.buffer);
     }
 
-    state.scene->deinit(state.state);
+    state.scene->deinit(state.state, state.audio);
     if (state.handle)
         dlclose(state.handle);
     CCCP_DestroySurface(state.buffer);
@@ -375,6 +377,9 @@ int main(int argc, char *argv[]) {
     free(state.args.path);
 #endif
     free(state.audio);
+    CCCP_DestroyHashTable(state.audio->waves);
+    CCCP_DestroyHashTable(state.audio->sounds);
+    CCCP_DestroyHashTable(state.audio->music);
     CloseAudioDevice();
     WindowClose();
     return 0;

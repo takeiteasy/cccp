@@ -166,6 +166,7 @@ void PauseSound(Sound sound);                                   // Pause a sound
 void ResumeSound(Sound sound);                                  // Resume a paused sound
 bool IsSoundPlaying(Sound sound);                               // Check if a sound is currently playing
 void SetSoundVolume(Sound sound, float volume);                 // Set volume for a sound (1.0 is max level)
+float GetSoundVolume(Sound sound);                            // Get current volume of a sound (1.0 is max level)
 void SetSoundPitch(Sound sound, float pitch);                   // Set pitch for a sound (1.0 is base level)
 void SetSoundPan(Sound sound, float pan);                       // Set pan for a sound (0.0 to 1.0, 0.5=center)
 Wave WaveCopy(Wave wave);                                       // Copy a wave to a new wave
@@ -187,6 +188,7 @@ void PauseMusicStream(Music music);                             // Pause music p
 void ResumeMusicStream(Music music);                            // Resume playing paused music
 void SeekMusicStream(Music music, float position);              // Seek music to a position (in seconds)
 void SetMusicVolume(Music music, float volume);                 // Set volume for music (1.0 is max level)
+float GetMusicVolume(Music music);                            // Get current volume of a music (1.0 is max level)
 void SetMusicPitch(Music music, float pitch);                   // Set pitch for a music (1.0 is base level)
 void SetMusicPan(Music music, float pan);                       // Set pan for a music (0.0 to 1.0, 0.5=center)
 float GetMusicTimeLength(Music music);                          // Get music time length (in seconds)

@@ -1159,6 +1159,11 @@ void SetSoundVolume(Sound sound, float volume)
     SetAudioBufferVolume(sound.stream.buffer, volume);
 }
 
+float GetSoundVolume(Sound sound)
+{
+    return sound.stream.buffer->volume;
+}
+
 // Set pitch for a sound
 void SetSoundPitch(Sound sound, float pitch)
 {
@@ -1981,6 +1986,11 @@ bool IsMusicStreamPlaying(Music music)
 void SetMusicVolume(Music music, float volume)
 {
     SetAudioStreamVolume(music.stream, volume);
+}
+
+float GetMusicVolume(Music music)
+{
+    return music.stream.buffer->volume;
 }
 
 // Set pitch for music

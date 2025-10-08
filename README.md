@@ -5,15 +5,15 @@ The *C* *C*reative *C*oding *P*roject
 ## TODO
 
 - [X] ~~Reimplement dylib reloading~~
-- [X] ~~Image loading from file (and exporting) (stb_image + qoi)~~
+- [X] ~~Image loading from file (and exporting)~~ (stb_image + qoi)
     - [ ] GIF/Video recording/exporting?
     - [ ] Export surface to image file (stb_image_write + qoi)
-- [ ] Shaders (multithreaded software renderer)
+- [ ] Shaders (multithreaded software renderer) (wip)
 - [ ] Generate noise surfaces
 - [ ] Other surface generators (gradients, checkerboards) 
 - [ ] Text rendering (font8x8 + stb_truetype)
 - [ ] Target FPS control
-- [ ] Sound (raudio)
+- [X] ~~Audio management~~ (raudio)
 - [ ] Dynamic rebuilding of scenes (dmon)
 - [ ] Packaging for different platforms?
 - [ ] 3D API? (using software rasterizer + software shaders)
@@ -21,12 +21,20 @@ The *C* *C*reative *C*oding *P*roject
 
 ## Dependencies
 
-- [nothings/stb](https://github.com/nothings/stb) [MIT/UNLICENSE]
+- [stb_image.h](https://github.com/nothings/stb/blob/master/stb_image.h)
+- [stb_image_write.h](https://github.com/nothings/stb/blob/master/stb_image_write.h)
+- [stb_vorbis.h](https://github.com/nothings/stb/blob/master/stb_vorbis.h)
 - [phoboslab/qoi](https://github.com/phoboslab/qoi) [MIT]
+- [phoboslab/qoa](https://github.com/phoboslab/qoa) [MIT]
 - [dhepper/font8x8](https://github.com/dhepper/font8x8/blob/master/font8x8_basic.h) [Public Domain]
 - [skandhurkat/Getopt-for-Visual-Studio](https://github.com/skandhurkat/Getopt-for-Visual-Studio) [GNU GPLv3]
 - [dlfcn-win32/dlfcn-win32](https://github.com/dlfcn-win32/dlfcn-win32) [MIT]
 - Inspired by this [blog post](https://nullprogram.com/blog/2014/12/23/) by [skeeto](https://github.com/skeeto/interactive-c-demo) [UNLICENSE]
+- [raudio](https://github.com/raysan5/raudio) [zlib/libpng]
+- [mackron/miniaudio](https://github.com/mackron/miniaudio) [Public Domain]
+- [mackron/dr_libs](https://github.com/mackron/dr_libs) [Public Domain]
+- jar_xm.h by Romain "Artefact2" Dalmaso [WTFPL]
+- jar_mod.h by Romain "Artefact2" Dalmaso [Public Domain]
 
 ## License
 ```

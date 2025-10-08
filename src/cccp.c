@@ -2,6 +2,7 @@
 // Anything not in here should only be linked to the main executable
 #define PAUL_IMPLEMENTATION
 #include "cccp.h"
+#include "./hashtable.c"
 #include "./surface.c"
 #include "./shader.c"
 #include "../deps/raudio.c"

@@ -7,7 +7,7 @@ struct CCCP_State {
     color_t clearColor;
 };
 
-static CCCP_State* init(CCCP_Surface framebuffer) {
+static CCCP_State* init(CCCP_Surface framebuffer, CCCP_AudioContext *audio) {
     // Called once when the program first starts
     // You must always create an instance of your CCCP_State definition
     // It must be allocated on the stack, not the heap
@@ -18,13 +18,13 @@ static CCCP_State* init(CCCP_Surface framebuffer) {
     return state;
 }
 
-static void deinit(CCCP_State *state) {
+static void deinit(CCCP_State *state, CCCP_AudioContext *audio) {
     // Only called when the program is exiting
     if (state)
         free(state);
 }
 
-static void reload(CCCP_State *state) {
+static void reload(CCCP_State *state, CCCP_AudioContext *audio) {
     // Called when the dynamic has been updated + reloaded
     // Here we change the `clearColor` field in our state to blue
     // If you rebuild the library, the screen will chang from red
@@ -32,11 +32,11 @@ static void reload(CCCP_State *state) {
     state->clearColor = rgb(0, 0, 255);
 }
 
-static void unload(CCCP_State *state) {
+static void unload(CCCP_State *state, CCCP_AudioContext *audio) {
     // Called when dynamic library has been unloaded
 }
 
-static int event(CCCP_State *state, CCCP_Event *e) {
+static int event(CCCP_State *state, CCCP_Event *e, CCCP_AudioContext *audio) {
     // Called on window event
     return 1;
 }

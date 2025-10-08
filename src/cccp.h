@@ -94,11 +94,25 @@ typedef struct {
     thrd_pool_t *pool;
 } CCCP_Shader;
 
-typedef Wave CCCP_Wave;
-typedef AudioStream CCCP_AudioStream;
-typedef Sound CCCP_Sound;
-typedef Music CCCP_Music;
-typedef struct CCCP_AudioContext CCCP_AudioContext;
+typedef struct CCCP_HashEntry {
+    const char* key;
+    void* value;
+    struct CCCP_HashEntry* next;
+} CCCP_HashEntry;
+
+typedef struct {
+    CCCP_HashEntry** buckets;
+    size_t capacity;
+    size_t size;
+    void(*free_callback)(void*);
+} CCCP_HashTable;
+
+typedef struct CCCP_AudioContext {
+    float volume;
+    CCCP_HashTable *waves;
+    CCCP_HashTable *sounds;
+    CCCP_HashTable *music;
+} CCCP_AudioContext;
 
 typedef struct {
     int windowWidth;
@@ -106,13 +120,15 @@ typedef struct {
     const char *windowTitle;
     color_t clearColor;
     int targetFPS;
-    CCCP_State*(*init)(CCCP_Surface);
-    void(*deinit)(CCCP_State*);
-    void(*reload)(CCCP_State*);
-    void(*unload)(CCCP_State*);
-    int(*event)(CCCP_State*, CCCP_Event*);
+    CCCP_State*(*init)(CCCP_Surface, CCCP_AudioContext*);
+    void(*deinit)(CCCP_State*, CCCP_AudioContext*);
+    void(*reload)(CCCP_State*, CCCP_AudioContext*);
+    void(*unload)(CCCP_State*, CCCP_AudioContext*);
+    int(*event)(CCCP_State*, CCCP_Event*, CCCP_AudioContext*);
     int(*tick)(CCCP_State*, CCCP_Surface, CCCP_AudioContext*, double);
 } CCCP_Scene;
+
+/* === SURFACES === */
 
 CCCP_Surface CCCP_NewSurface(unsigned int w, unsigned int h, color_t clearColor);
 CCCP_Surface CCCP_SurfaceFromMemory(const void* data, int width, int height, bitmap_format_t format);
@@ -144,7 +160,62 @@ CCCP_Shader CCCP_NewShader(CCCP_ShaderFunc func, int numThreads);
 void CCCP_DestroyShader(CCCP_Shader shader);
 void CCCP_ApplyShader(CCCP_Surface surface, CCCP_Shader shader, void* userdata);
 
-// TODO: rAudio wrappers
+/* === AUDIO === */
+
+void CCCP_SetMasterVolume(CCCP_AudioContext* ctx, float volume);
+float CCCP_GetMasterVolume(CCCP_AudioContext* ctx);
+
+bool CCCP_NewWaveFromMemory(CCCP_AudioContext* ctx, const char* key, const void* data, int dataSize);
+bool CCCP_NewWaveFromFile(CCCP_AudioContext* ctx, const char* key, const char* filename);
+bool CCCP_DestroyWave(CCCP_AudioContext* ctx, const char* key);
+bool CCCP_NewSoundFromWave(CCCP_AudioContext* ctx, const char* key, const char* waveKey);
+bool CCCP_NewSoundFromFile(CCCP_AudioContext* ctx, const char* key, const char* filename);
+bool CCCP_DestroySound(CCCP_AudioContext* ctx, const char* key);
+bool CCCP_NewMusicFromMemory(CCCP_AudioContext* ctx, const char* key, const void* data, int dataSize);
+bool CCCP_NewMusicFromFile(CCCP_AudioContext* ctx, const char* key, const char* filename);
+bool CCCP_DestroyMusic(CCCP_AudioContext* ctx, const char* key);
+
+void CCCP_UnloadAllWaves(CCCP_AudioContext* ctx);
+void CCCP_UnloadAllSounds(CCCP_AudioContext* ctx);
+void CCCP_UnloadAllMusic(CCCP_AudioContext* ctx);
+
+bool CCCP_IsWaveReady(CCCP_AudioContext* ctx, const char* key);
+bool CCCP_IsSoundReady(CCCP_AudioContext* ctx, const char* key);
+bool CCCP_IsMusicReady(CCCP_AudioContext* ctx, const char* key);
+
+void CCCP_UpdateSound(CCCP_AudioContext* ctx, const char* key, const void *data, int frameCount);
+void CCCP_UpdateMusic(CCCP_AudioContext* ctx, const char* key, const void *data, int sampleCount);
+
+void CCCP_PlaySound(CCCP_AudioContext* ctx, const char* key);
+void CCCP_StopSound(CCCP_AudioContext* ctx, const char* key);
+void CCCP_PauseSound(CCCP_AudioContext* ctx, const char* key);
+void CCCP_ResumeSound(CCCP_AudioContext* ctx, const char* key);
+bool CCCP_IsSoundPlaying(CCCP_AudioContext* ctx, const char* key);
+void CCCP_SetSoundVolume(CCCP_AudioContext* ctx, const char* key, float volume);
+float CCCP_GetSoundVolume(CCCP_AudioContext* ctx, const char* key);
+
+void CCCP_PlayMusic(CCCP_AudioContext* ctx, const char* key);
+void CCCP_StopMusic(CCCP_AudioContext* ctx, const char* key);
+void CCCP_PauseMusic(CCCP_AudioContext* ctx, const char* key);
+void CCCP_ResumeMusic(CCCP_AudioContext* ctx, const char* key);
+bool CCCP_IsMusicPlaying(CCCP_AudioContext* ctx, const char* key);
+void CCCP_SetMusicVolume(CCCP_AudioContext* ctx, const char* key, float volume);
+float CCCP_GetMusicVolume(CCCP_AudioContext* ctx, const char* key);
+void CCCP_SeekMusic(CCCP_AudioContext* ctx, const char* key, float position);
+float CCCP_GetMusicTimeLength(CCCP_AudioContext* ctx, const char* key);
+float CCCP_GetMusicTimePlayed(CCCP_AudioContext* ctx, const char* key);
+void CCCP_SetMusicLooping(CCCP_AudioContext* ctx, const char* key, bool looping);
+bool CCCP_IsMusicLooping(CCCP_AudioContext* ctx, const char* key);
+
+/* === HASH TABLE === */
+
+CCCP_HashTable* CCCP_NewHashTable(size_t capacity);
+void CCCP_DestroyHashTable(CCCP_HashTable* table);
+int CCCP_HashTableInsert(CCCP_HashTable* table, const char* key, void* value);
+void* CCCP_HashTableGet(CCCP_HashTable* table, const char* key);
+int CCCP_HashTableRemove(CCCP_HashTable* table, const char* key);
+size_t CCCP_HashTableSize(CCCP_HashTable* table);
+void CCCP_HashTableClear(CCCP_HashTable* table);
 
 #ifdef __cplusplus
 }
