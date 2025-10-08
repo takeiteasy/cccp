@@ -9,6 +9,7 @@ extern "C" {
 #include "paul_math.h"
 #include "paul_threads.h"
 #include "paul_os.h"
+#include "raudio.h"
 
 typedef enum {
     WINDOW_RESIZABLE          = 1 << 0,
@@ -93,6 +94,12 @@ typedef struct {
     thrd_pool_t *pool;
 } CCCP_Shader;
 
+typedef Wave CCCP_Wave;
+typedef AudioStream CCCP_AudioStream;
+typedef Sound CCCP_Sound;
+typedef Music CCCP_Music;
+typedef struct CCCP_AudioContext CCCP_AudioContext;
+
 typedef struct {
     int windowWidth;
     int windowHeight;
@@ -104,7 +111,7 @@ typedef struct {
     void(*reload)(CCCP_State*);
     void(*unload)(CCCP_State*);
     int(*event)(CCCP_State*, CCCP_Event*);
-    int(*tick)(CCCP_State*, CCCP_Surface, double);
+    int(*tick)(CCCP_State*, CCCP_Surface, CCCP_AudioContext*, double);
 } CCCP_Scene;
 
 CCCP_Surface CCCP_NewSurface(unsigned int w, unsigned int h, color_t clearColor);
@@ -136,6 +143,8 @@ CCCP_Surface CCCP_ClipSurface(CCCP_Surface surface, int x, int y, int w, int h);
 CCCP_Shader CCCP_NewShader(CCCP_ShaderFunc func, int numThreads);
 void CCCP_DestroyShader(CCCP_Shader shader);
 void CCCP_ApplyShader(CCCP_Surface surface, CCCP_Shader shader, void* userdata);
+
+// TODO: rAudio wrappers
 
 #ifdef __cplusplus
 }

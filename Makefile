@@ -20,7 +20,7 @@ else
 endif
 
 BIN := build
-SRCS:=$(filter-out src/cccp.c, $(wildcard src/*.c))
+SRCS:=$(filter-out src/cccp.c, $(wildcard src/*.c)) deps/raudio.c
 OBJS:=$(SRCS:.c=.o)
 OUT:=$(BIN)/cccp$(PROGEXT)
 

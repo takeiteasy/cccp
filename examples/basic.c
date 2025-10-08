@@ -41,7 +41,7 @@ static int event(CCCP_State *state, CCCP_Event *e) {
     return 1;
 }
 
-static int tick(CCCP_State *state, CCCP_Surface pbo, double delta) {
+static int tick(CCCP_State *state, CCCP_Surface pbo, CCCP_AudioContext *audio, double delta) {
     // Called every frame, this is your update callback
     CCCP_ClearSurface(pbo, state->clearColor);
     CCCP_DrawRect(pbo, 50, 50, 50, 50, rgb(255, 255, 255), true);

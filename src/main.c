@@ -43,6 +43,10 @@
 #include <stdlib.h>
 #include <string.h>
 
+struct CCCP_AudioContext {
+    float volume;
+};
+
 static struct {
 #if defined(PLATFORM_WINDOWS)
     FILETIME writeTime;
@@ -53,6 +57,7 @@ static struct {
     CCCP_State *state;
     CCCP_Scene *scene;
     CCCP_Surface buffer;
+    CCCP_AudioContext* audio;
     struct {
         unsigned int width;
         unsigned int height;
@@ -339,23 +344,29 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
+    InitAudioDevice();
+    state.audio = malloc(sizeof(CCCP_AudioContext));
+    state.audio->volume = 1.0f;
+
     if (!(state.buffer = CCCP_NewSurface(state.args.width, state.args.height, rgb(0, 0, 0))))
         return 0;
 
     if (!ReloadLibrary(state.args.path))
         return 0;
 
-#define X(NAME, _) CCCP_Set
+#define X(NAME, _) CCCP_Set##NAME##Callback(CCCP_##NAME);
+    CCCP_CALLBACKS
 #undef X
 
     while (WindowPoll()) {
         CCCP_ClearSurface(state.buffer, state.scene->clearColor);
         if (!ReloadLibrary(state.args.path))
             break;
-        if (!state.scene->tick(state.state, state.buffer, 0.f))
+        if (!state.scene->tick(state.state, state.buffer, state.audio, 0.f))
             break;
         WindowFlush(state.buffer);
     }
+
     state.scene->deinit(state.state);
     if (state.handle)
         dlclose(state.handle);
@@ -363,6 +374,8 @@ int main(int argc, char *argv[]) {
 #if !defined(PLATFORM_WINDOWS)
     free(state.args.path);
 #endif
+    free(state.audio);
+    CloseAudioDevice();
     WindowClose();
     return 0;
 }
