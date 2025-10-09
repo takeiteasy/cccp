@@ -8,7 +8,7 @@ The *C* *C*reative *C*oding *P*roject
 - [X] ~~Image loading from file (and exporting)~~ (stb_image + qoi)
     - [ ] GIF/Video recording/exporting?
     - [ ] Export surface to image file (stb_image_write + qoi)
-- [ ] Shaders (multithreaded software renderer) (wip)
+- [X] ~~Shaders (multithreaded software renderer)~~
 - [ ] Generate noise surfaces
 - [ ] Other surface generators (gradients, checkerboards) 
 - [ ] Text rendering (font8x8 + stb_truetype)
@@ -17,6 +17,7 @@ The *C* *C*reative *C*oding *P*roject
 - [ ] Dynamic rebuilding of scenes (dmon)
 - [ ] Packaging for different platforms?
 - [ ] 3D API? (using software rasterizer + software shaders)
+- [ ] Test on Linux and Windows (only tested on macOS)
 - [ ] Export web builds (emscripten) (no dynamic loading of scenes)
 
 ## Dependencies

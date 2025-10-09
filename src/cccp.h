@@ -91,6 +91,7 @@ typedef vec4(*CCCP_ShaderFunc)(vec2, vec2, float, void*);
 
 typedef struct {
     CCCP_ShaderFunc func;
+    int thread_count; // 0 = use hardware concurrency
     thrd_pool_t *pool;
 } CCCP_Shader;
 
@@ -157,8 +158,8 @@ CCCP_Surface CCCP_FlipSurface(CCCP_Surface surface, bool horizontal, bool vertic
 CCCP_Surface CCCP_ClipSurface(CCCP_Surface surface, int x, int y, int w, int h);
 
 CCCP_Shader CCCP_NewShader(CCCP_ShaderFunc func, int numThreads);
-void CCCP_DestroyShader(CCCP_Shader shader);
-void CCCP_ApplyShader(CCCP_Surface surface, CCCP_Shader shader, void* userdata);
+void CCCP_DestroyShader(CCCP_Shader *shader);
+void CCCP_ApplyShader(CCCP_Surface surface, CCCP_Shader *shader, void* userdata);
 
 /* === AUDIO === */
 
