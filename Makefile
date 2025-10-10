@@ -1,24 +1,22 @@
 ifeq ($(OS),Windows_NT)
 	LIBEXT=dll
 	PROGEXT=.exe
-	CFLAGS:=-g -Wall -Wno-missing-braces -fenable-matrix -Ideps
 	LINKER:=-lgdi32	include windows.Makefile
 else
 	UNAME:=$(shell uname -s)
 	PROGEXT=
 	ifeq ($(UNAME),Darwin)
 		LIBEXT=dylib
-		CFLAGS:=-g -Wall -Wno-missing-braces -fenable-matrix -Ideps
 		LINKER:=-lpthread -framework Cocoa
 	else ifeq ($(UNAME),Linux)
 		LIBEXT=so
-		CFLAGS:=-g -Wall -Wno-missing-braces -fenable-matrix -Ideps
 		LINKER:=-lpthread -lX11 -lm
 	else
 		$(error OS not supported by this Makefile)
 	endif
 endif
 
+CFLAGS:=-g -Wall -Wno-missing-braces -Ideps -DPAUL_MATH_NO_MATRICES
 BIN := build
 SRCS:=$(filter-out src/cccp.c, $(wildcard src/*.c))
 OBJS:=$(SRCS:.c=.o)

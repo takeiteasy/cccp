@@ -1,10 +1,10 @@
 # CCCP 
 
-The **C** **C**reative **C**oding **P**roject (CCCP) is a simple framework for making creative coding projects in C. It provides hot-reloading of scenes, window + input handling, multithreaded software shaders, audio playback, image loading, and text rendering.
+The **C** **C**reative **C**oding **P**roject (CCCP) is a simple, cross-platform framework for making creative coding projects in C. It provides hot-reloading of scenes, window + input handling, multithreaded software shaders, audio playback, image loading, and text rendering.
 
 ![Preview](/preview.gif)
 
-This project is inspired by [skeeto's interactive C demo](https://nullprogram.com/blog/2014/12/23/). For a full list of 3rd party dependencies, see the *[Dependencies](#dependencies)* section below. See *[TODO](#todo)* for planned features.
+This project is inspired by [skeeto's interactive C demo](https://nullprogram.com/blog/2014/12/23/). For a full list of 3rd party dependencies, see the *[Dependencies](#dependencies)* section below. See *[TODO](#todo)* for planned features. Supported target platforms are macOS (Cocoa), Linux (X11), and Windows (WinAPI) with `clang` or `gcc`. Web builds (Emscripten) are planned.
 
 ## How to use
 
