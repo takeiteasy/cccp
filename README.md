@@ -1,6 +1,45 @@
 # CCCP 
 
-The *C* *C*reative *C*oding *P*roject
+The *C* *C*reative *C*oding *P*roject (CCCP) is a simple framework for making creative coding projects in C. It provides hot-reloading of scenes, window + input handling, multithreaded software shaders, audio playback, image loading, and text rendering.
+
+![Preview](/preview.gif)
+
+This project is inspired by [skeeto's interactive C demo](https://nullprogram.com/blog/2014/12/23/). For a full list of 3rd party dependencies, see the *[Dependencies](#dependencies)* section below. See *[TODO](#todo)* for planned features.
+
+## How to use
+
+```
+ usage: cccp [path to dylib] [options]
+
+ cccp  Copyright (C) 2024  George Watson
+ This program comes with ABSOLUTELY NO WARRANTY; for details type `show w'.
+ This is free software, and you are welcome to redistribute it
+ under certain conditions; type `show c' for details.
+
+ Options:
+     -w/--width     Window width [default: 640]
+     -h/--height    Window height [default: 480]
+     -t/--title     Window title [default: "CCCP"]
+     -r/--resizable Enable resizable window
+     -a/--top       Enable window always on top
+     -u/--usage     Display this message
+```
+
+1. Create a new C file for your scene, e.g. `myscene.c`, and put it in the `scenes/` directory. You can use `scenes/example.c` as a template.
+2. Build the project using `make all`.
+3. Run the program with your scene: `./build/cccp build/myscene.dylib` (on macOS, .so on Linux, .dll on Windows)
+4. Edit your scene code and recompile it with `make scenes` while the program is running to see your changes live!
+5. ???
+6. Profit!
+
+## Building
+
+```
+git clone https://github.com/takeiteasy/cccp.git
+cd cccp
+mkdir build
+make all
+```
 
 ## TODO
 
@@ -28,7 +67,6 @@ The *C* *C*reative *C*oding *P*roject
 - [dhepper/font8x8](https://github.com/dhepper/font8x8/blob/master/font8x8_basic.h) [Public Domain]
 - [skandhurkat/Getopt-for-Visual-Studio](https://github.com/skandhurkat/Getopt-for-Visual-Studio) [GNU GPLv3]
 - [dlfcn-win32/dlfcn-win32](https://github.com/dlfcn-win32/dlfcn-win32) [MIT]
-- Inspired by this [blog post](https://nullprogram.com/blog/2014/12/23/) by [skeeto](https://github.com/skeeto/interactive-c-demo) [UNLICENSE]
 - [raysan5/raudio](https://github.com/raysan5/raudio) [zlib/libpng]
     - [mackron/miniaudio](https://github.com/mackron/miniaudio) [Public Domain]
     - [mackron/dr_libs](https://github.com/mackron/dr_libs) [Public Domain]
