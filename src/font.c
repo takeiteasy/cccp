@@ -1,6 +1,63 @@
 #include "cccp.h"
 #define STB_TRUETYPE_IMPLEMENTATION
 #include "../deps/stb_truetype.h"
+#include "font8x8.h"
+
+static void render_char(CCCP_Surface surface, int x, int y, const char bitmap[8], color_t color) {
+    for (int px = 0; px < 8; px++)
+        for (int py = 0; py < 8; py++)
+            if (bitmap[px] & (1 << py))
+                CCCP_SetPixel(surface, x + px, y + py, color);
+}
+
+void CCCP_DebugPrintASCII(CCCP_Surface surface, int x, int y, const char* text, color_t color) {
+    int pixel_x = x * 8;
+    int pixel_y = y * 8;
+    while (*text) {
+        unsigned char c = (unsigned char)*text;
+        render_char(surface, pixel_x, pixel_y, font8x8_basic[c], color);
+        pixel_x += 8;
+        text++;
+    }
+}
+
+void CCCP_DebugPrintUnicode(CCCP_Surface surface, int x, int y, const wchar_t* text, color_t color) {
+    int start_pixel_x = x * 8;
+    int current_pixel_x = start_pixel_x;
+    int pixel_y = y * 8;
+    while (*text) {
+        if (*text == L'\n') {
+            current_pixel_x = start_pixel_x;
+            pixel_y += 8;
+        } else if (*text == L'\t')
+            current_pixel_x += 32; // 4 spaces
+        else if (*text == L'\r')
+            current_pixel_x = start_pixel_x;
+        else {
+            unsigned int code = (unsigned int)*text;
+            const char* bitmap = NULL;
+            if (code >= 0x0000 && code <= 0x007F)
+                bitmap = font8x8_basic[code];
+            else if (code >= 0x0080 && code <= 0x009F)
+                bitmap = font8x8_control[code - 0x0080];
+            else if (code >= 0x00A0 && code <= 0x00FF)
+                bitmap = font8x8_ext_latin[code - 0x00A0];
+            else if (code >= 0x0390 && code <= 0x03C9)
+                bitmap = font8x8_greek[code - 0x0390];
+            else if (code >= 0x2500 && code <= 0x257F)
+                bitmap = font8x8_box[code - 0x2500];
+            else if (code >= 0x2580 && code <= 0x259F)
+                bitmap = font8x8_block[code - 0x2580];
+            else if (code >= 0x3040 && code <= 0x309F)
+                bitmap = font8x8_hiragana[code - 0x3040];
+            else
+                bitmap = font8x8_basic[32];
+            render_char(surface, current_pixel_x, pixel_y, bitmap, color);
+            current_pixel_x += 8;
+        }
+        text++;
+    }
+}
 
 struct CCCP_Font {
     unsigned char* data;
