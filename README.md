@@ -10,7 +10,7 @@ The *C* *C*reative *C*oding *P*roject
     - [ ] Export surface to image file (stb_image_write + qoi)
 - [X] ~~Shaders (multithreaded software renderer)~~
 - [X] ~~Generate noise, gradient surfaces, etc.~~
-- [ ] Text rendering (~~font8x8~~ + stb_truetype)
+- [X] ~~Text rendering~~ (font8x8 + stb_truetype)
 - [X] ~~Target FPS control~~
 - [X] ~~Audio management~~ (raudio)
 - [ ] Dynamic rebuilding of scenes (dmon)
@@ -21,20 +21,19 @@ The *C* *C*reative *C*oding *P*roject
 
 ## Dependencies
 
-- [stb_image.h](https://github.com/nothings/stb/blob/master/stb_image.h)
-- [stb_image_write.h](https://github.com/nothings/stb/blob/master/stb_image_write.h)
-- [stb_vorbis.h](https://github.com/nothings/stb/blob/master/stb_vorbis.h)
+- [nothings/stb](https://github.com/nothings/stb/)
+    - stb_vorbis.c, stb_truetype.h, stb_image.h, stb_image_write.h [Public Domain]
 - [phoboslab/qoi](https://github.com/phoboslab/qoi) [MIT]
 - [phoboslab/qoa](https://github.com/phoboslab/qoa) [MIT]
 - [dhepper/font8x8](https://github.com/dhepper/font8x8/blob/master/font8x8_basic.h) [Public Domain]
 - [skandhurkat/Getopt-for-Visual-Studio](https://github.com/skandhurkat/Getopt-for-Visual-Studio) [GNU GPLv3]
 - [dlfcn-win32/dlfcn-win32](https://github.com/dlfcn-win32/dlfcn-win32) [MIT]
 - Inspired by this [blog post](https://nullprogram.com/blog/2014/12/23/) by [skeeto](https://github.com/skeeto/interactive-c-demo) [UNLICENSE]
-- [raudio](https://github.com/raysan5/raudio) [zlib/libpng]
-- [mackron/miniaudio](https://github.com/mackron/miniaudio) [Public Domain]
-- [mackron/dr_libs](https://github.com/mackron/dr_libs) [Public Domain]
-- jar_xm.h by Romain "Artefact2" Dalmaso [WTFPL]
-- jar_mod.h by Romain "Artefact2" Dalmaso [Public Domain]
+- [raysan5/raudio](https://github.com/raysan5/raudio) [zlib/libpng]
+    - [mackron/miniaudio](https://github.com/mackron/miniaudio) [Public Domain]
+    - [mackron/dr_libs](https://github.com/mackron/dr_libs) [Public Domain]
+    - jar_xm.h by Romain "Artefact2" Dalmaso [WTFPL]
+    - jar_mod.h by Romain "Artefact2" Dalmaso [Public Domain]
 
 ## License
 ```

@@ -106,7 +106,7 @@ bool CCCP_NewWaveFromMemory(CCCP_AudioContext* ctx, const char* key, const void*
     return true;
 }
 
-static const char* load_file(const char* filename, unsigned char** outData, int* outSize) {
+static const char* load_file(const char* filename, int* outSize) {
     FILE *file = fopen(filename, "rb");
     if (!file)
         return NULL;
@@ -128,19 +128,17 @@ static const char* load_file(const char* filename, unsigned char** outData, int*
         return NULL;
     }
     fclose(file);
-    *outData = data;
     *outSize = (int)size;
-    return what_format(data, size);
+    return data;
 }
 
 bool CCCP_NewWaveFromFile(CCCP_AudioContext* ctx, const char* key, const char* filename) {
-    unsigned char *data = NULL;
     int dataSize = 0;
-    const char *format = load_file(filename, &data, &dataSize);
-    if (!format || !data)
+    const char *data = load_file(filename, &dataSize);
+    if (!data)
         return false;
     bool result = CCCP_NewWaveFromMemory(ctx, key, data, dataSize);
-    free(data);
+    free((void*)data);
     return result;
 }
 
@@ -189,13 +187,17 @@ bool CCCP_NewSoundFromWave(CCCP_AudioContext* ctx, const char* key, const char* 
 }
 
 bool CCCP_NewSoundFromFile(CCCP_AudioContext* ctx, const char* key, const char* filename) {
-    unsigned char *data = NULL;
     int dataSize = 0;
-    const char *format = load_file(filename, &data, &dataSize);
-    if (!format || !data)
+    const char *data = load_file(filename, &dataSize);
+    if (!data)
         return false;
+    const char *format = what_format((const unsigned char*)data, dataSize);
+    if (!format) {
+        free((void*)data);
+        return false;
+    }
     Wave result = LoadWaveFromMemory(format, (const unsigned char*)data, dataSize);
-    free(data);
+    free((void*)data);
     if (!IsWaveReady(result))
         return false;
     Sound *sound = malloc(sizeof(Sound));
@@ -270,13 +272,12 @@ bool CCCP_NewMusicFromMemory(CCCP_AudioContext* ctx, const char* key, const void
 }
 
 bool CCCP_NewMusicFromFile(CCCP_AudioContext* ctx, const char* key, const char* filename) {
-    unsigned char *data = NULL;
     int dataSize = 0;
-    const char *format = load_file(filename, &data, &dataSize);
-    if (!format || !data)
+    const char *data = load_file(filename, &dataSize);
+    if (!data)
         return false;
     bool result = CCCP_NewMusicFromMemory(ctx, key, data, dataSize);
-    free(data);
+    free((void*)data);
     return result;
 }
 

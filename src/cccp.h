@@ -107,6 +107,8 @@ typedef struct {
     void(*free_callback)(void*);
 } CCCP_HashTable;
 
+typedef struct CCCP_Font CCCP_Font;
+
 typedef struct CCCP_AudioContext {
     float volume;
     CCCP_HashTable *waves;
@@ -250,6 +252,12 @@ void* CCCP_HashTableGet(CCCP_HashTable* table, const char* key);
 int CCCP_HashTableRemove(CCCP_HashTable* table, const char* key);
 size_t CCCP_HashTableSize(CCCP_HashTable* table);
 void CCCP_HashTableClear(CCCP_HashTable* table);
+
+/* === FONT === */
+
+CCCP_Font* CCCP_LoadFont(const char* filename);
+void CCCP_DestroyFont(CCCP_Font* font);
+void CCCP_DrawText(CCCP_Surface surface, CCCP_Font* font, int x, int y, const char* text, color_t color, float size);
 
 #ifdef __cplusplus
 }

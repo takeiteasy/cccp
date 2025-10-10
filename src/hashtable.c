@@ -15,7 +15,7 @@ static unsigned long hash_string(const char* str) {
 CCCP_HashTable* CCCP_NewHashTable(size_t capacity) {
     if (capacity == 0)
         capacity = 16;
-    CCCP_HashTable* table = (CCCP_HashTable*)malloc(sizeof(CCCP_HashTable));
+    CCCP_HashTable* table = malloc(sizeof(CCCP_HashTable));
     if (!table)
         return NULL;
     table->buckets = (CCCP_HashEntry**)calloc(capacity, sizeof(CCCP_HashEntry*));
@@ -36,6 +36,7 @@ void CCCP_DestroyHashTable(CCCP_HashTable* table) {
             CCCP_HashEntry* next = entry->next;
             if (table->free_callback)
                 table->free_callback(entry->value);
+            free(entry->key);
             free(entry);
             entry = next;
         }
@@ -58,7 +59,7 @@ int CCCP_HashTableInsert(CCCP_HashTable* table, const char* key, void* value) {
         entry = entry->next;
     }
     // new entry
-    CCCP_HashEntry* new_entry = (CCCP_HashEntry*)malloc(sizeof(CCCP_HashEntry));
+    CCCP_HashEntry* new_entry = malloc(sizeof(CCCP_HashEntry));
     if (!new_entry)
         return -1;
     new_entry->key = key;
@@ -100,6 +101,7 @@ int CCCP_HashTableRemove(CCCP_HashTable* table, const char* key) {
             }
             if (table->free_callback)
                 table->free_callback(entry->value);
+            free(entry->key);
             free(entry);
             table->size--;
             return 0;
@@ -123,6 +125,7 @@ void CCCP_HashTableClear(CCCP_HashTable* table) {
             CCCP_HashEntry* next = entry->next;
             if (table->free_callback)
                 table->free_callback(entry->value);
+            free(entry->key);
             free(entry);
             entry = next;
         }

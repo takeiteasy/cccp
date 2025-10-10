@@ -46,7 +46,7 @@ void CCCP_Sleep(double seconds) {
 }
 
 CCCP_Timer* CCCP_NewTimer(void) {
-    CCCP_Timer* timer = (CCCP_Timer*)malloc(sizeof(CCCP_Timer));
+    CCCP_Timer* timer = malloc(sizeof(CCCP_Timer));
     if (timer) {
         timer->start_time = 0.0;
         timer->paused_time = 0.0;
