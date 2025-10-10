@@ -667,7 +667,7 @@ static float fade(float t) {
 #define FASTFLOOR(x) (((x) >= 0) ? (int)(x) : (int)(x)-1)
 
 /* 3D Perlin noise */
-float perlin(float x, float y, float z) {
+float perlin_noise(float x, float y, float z) {
     /* Find grid points */
     int gx = FASTFLOOR(x);
     int gy = FASTFLOOR(y);

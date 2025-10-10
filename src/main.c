@@ -1,6 +1,6 @@
 #define PAUL_IMPLEMENTATION
 #include "cccp.h"
-#include "internal.h"
+#include "window.h"
 
 #ifndef WINDOW_WIDTH
 #define WINDOW_WIDTH 640
@@ -54,6 +54,7 @@ static struct {
     CCCP_Scene *scene;
     CCCP_Surface buffer;
     CCCP_AudioContext* audio;
+    CCCP_Timer* frame_timer;
     struct {
         unsigned int width;
         unsigned int height;
@@ -342,6 +343,9 @@ int main(int argc, char *argv[]) {
 
     InitAudioDevice();
 
+    state.frame_timer = CCCP_NewTimer();
+    CCCP_StartTimer(state.frame_timer);
+
     if (!(state.buffer = CCCP_NewSurface(state.args.width, state.args.height, rgb(0, 0, 0))))
         return 0;
 
@@ -353,6 +357,8 @@ int main(int argc, char *argv[]) {
 #undef X
 
     while (WindowPoll()) {
+        double delta = CCCP_GetElapsedTime(state.frame_timer);
+        CCCP_StartTimer(state.frame_timer);
         CCCP_ClearSurface(state.buffer, state.scene->clearColor);
         if (!ReloadLibrary(state.args.path))
             break;
@@ -364,9 +370,13 @@ int main(int argc, char *argv[]) {
                 UpdateMusicStream(*music);
             entry = entry->next;
         }
-        if (!state.scene->tick(state.state, state.buffer, state.audio, 0.f))
+        if (!state.scene->tick(state.state, state.buffer, state.audio, delta))
             break;
         WindowFlush(state.buffer);
+        int target_fps = state.scene && state.scene->targetFPS > 0 ? state.scene->targetFPS : TARGET_FPS;
+        double frame_time = 1.0 / target_fps;
+        if (delta < frame_time)
+            CCCP_Sleep(frame_time - delta);
     }
 
     state.scene->deinit(state.state, state.audio);
@@ -376,6 +386,7 @@ int main(int argc, char *argv[]) {
 #if !defined(PLATFORM_WINDOWS)
     free(state.args.path);
 #endif
+    CCCP_DestroyTimer(state.frame_timer);
     free(state.audio);
     CCCP_DestroyHashTable(state.audio->waves);
     CCCP_DestroyHashTable(state.audio->sounds);

@@ -9,10 +9,9 @@ The *C* *C*reative *C*oding *P*roject
     - [ ] GIF/Video recording/exporting?
     - [ ] Export surface to image file (stb_image_write + qoi)
 - [X] ~~Shaders (multithreaded software renderer)~~
-- [ ] Generate noise surfaces
-- [ ] Other surface generators (gradients, checkerboards) 
+- [X] ~~Generate noise, gradient surfaces, etc.~~
 - [ ] Text rendering (font8x8 + stb_truetype)
-- [ ] Target FPS control
+- [X] ~~Target FPS control~~
 - [X] ~~Audio management~~ (raudio)
 - [ ] Dynamic rebuilding of scenes (dmon)
 - [ ] Packaging for different platforms?

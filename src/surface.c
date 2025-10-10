@@ -3,6 +3,8 @@
 #include "stb_image.h"
 #define QOI_IMPLEMENTATION
 #include "qoi.h"
+#define PAUL_RANDOM_IMPLEMENTATION
+#include "paul_random.h"
 
 CCCP_Surface CCCP_NewSurface(unsigned int w, unsigned int h, color_t clearColor) {
     return bitmap_empty(w, h, clearColor);
@@ -109,3 +111,260 @@ CCCP_Surface CCCP_FlipSurface(CCCP_Surface surface, bool horizontal, bool vertic
 CCCP_Surface CCCP_ClipSurface(CCCP_Surface surface, int x, int y, int w, int h) {
     return bitmap_clipped(surface, x, y, w, h);
 }
+
+CCCP_Surface CCCP_SurfaceFromPerlinNoise(unsigned int width, unsigned int height, float scale, float offsetX, float offsetY) {
+    CCCP_Surface surface = CCCP_NewSurface(width, height, (color_t){0.0f, 0.0f, 0.0f, 1.0f});
+    if (!surface) return NULL;
+
+    for (unsigned int y = 0; y < height; y++) {
+        for (unsigned int x = 0; x < width; x++) {
+            float nx = (float)x / scale + offsetX;
+            float ny = (float)y / scale + offsetY;
+            float noise = perlin_noise(nx, ny, 0.0f);
+            // Convert from [-1, 1] to [0, 255]
+            uint8_t gray = (uint8_t)((noise + 1.0f) * 0.5f * 255.0f);
+            color_t color = {gray / 255.0f, gray / 255.0f, gray / 255.0f, 1.0f};
+            CCCP_SetPixel(surface, x, y, color);
+        }
+    }
+    return surface;
+}
+
+CCCP_Surface CCCP_SurfaceFromSimplexNoise(unsigned int width, unsigned int height, float scale, float offsetX, float offsetY) {
+    CCCP_Surface surface = CCCP_NewSurface(width, height, (color_t){0.0f, 0.0f, 0.0f, 1.0f});
+    if (!surface) return NULL;
+
+    for (unsigned int y = 0; y < height; y++) {
+        for (unsigned int x = 0; x < width; x++) {
+            float nx = (float)x / scale + offsetX;
+            float ny = (float)y / scale + offsetY;
+            float noise = simplex_noise(nx, ny, 0.0f);
+            // Convert from [-1, 1] to [0, 255]
+            uint8_t gray = (uint8_t)((noise + 1.0f) * 0.5f * 255.0f);
+            color_t color = {gray / 255.0f, gray / 255.0f, gray / 255.0f, 1.0f};
+            CCCP_SetPixel(surface, x, y, color);
+        }
+    }
+    return surface;
+}
+
+CCCP_Surface CCCP_SurfaceFromWorleyNoise(unsigned int width, unsigned int height, float scale, float offsetX, float offsetY) {
+    CCCP_Surface surface = CCCP_NewSurface(width, height, (color_t){0.0f, 0.0f, 0.0f, 1.0f});
+    if (!surface) return NULL;
+
+    for (unsigned int y = 0; y < height; y++) {
+        for (unsigned int x = 0; x < width; x++) {
+            float nx = (float)x / scale + offsetX;
+            float ny = (float)y / scale + offsetY;
+            float noise = worley_noise(nx, ny, 0.0f);
+            // Worley noise is typically in [0, 1], convert to [0, 255]
+            uint8_t gray = (uint8_t)(noise * 255.0f);
+            color_t color = {gray / 255.0f, gray / 255.0f, gray / 255.0f, 1.0f};
+            CCCP_SetPixel(surface, x, y, color);
+        }
+    }
+    return surface;
+}
+
+CCCP_Surface CCCP_SurfaceFromValueNoise(unsigned int width, unsigned int height, float scale, float offsetX, float offsetY) {
+    CCCP_Surface surface = CCCP_NewSurface(width, height, (color_t){0.0f, 0.0f, 0.0f, 1.0f});
+    if (!surface) return NULL;
+
+    for (unsigned int y = 0; y < height; y++) {
+        for (unsigned int x = 0; x < width; x++) {
+            float nx = (float)x / scale + offsetX;
+            float ny = (float)y / scale + offsetY;
+            float noise = value_noise(nx, ny, 0.0f);
+            // Convert from [-1, 1] to [0, 255]
+            uint8_t gray = (uint8_t)((noise + 1.0f) * 0.5f * 255.0f);
+            color_t color = {gray / 255.0f, gray / 255.0f, gray / 255.0f, 1.0f};
+            CCCP_SetPixel(surface, x, y, color);
+        }
+    }
+    return surface;
+}
+
+CCCP_Surface CCCP_SurfaceFromWhiteNoise(unsigned int width, unsigned int height, float scale, float offsetX, float offsetY) {
+    CCCP_Surface surface = CCCP_NewSurface(width, height, (color_t){0.0f, 0.0f, 0.0f, 1.0f});
+    if (!surface) return NULL;
+
+    for (unsigned int y = 0; y < height; y++) {
+        for (unsigned int x = 0; x < width; x++) {
+            float nx = (float)x / scale + offsetX;
+            float ny = (float)y / scale + offsetY;
+            float noise = white_noise(nx, ny, 0.0f);
+            // Convert from [-1, 1] to [0, 255]
+            uint8_t gray = (uint8_t)((noise + 1.0f) * 0.5f * 255.0f);
+            color_t color = {gray / 255.0f, gray / 255.0f, gray / 255.0f, 1.0f};
+            CCCP_SetPixel(surface, x, y, color);
+        }
+    }
+    return surface;
+}
+
+CCCP_Surface CCCP_SurfaceFromFBMNoise(unsigned int width, unsigned int height, float scale, float offsetX, float offsetY, float lacunarity, float gain, int octaves) {
+    CCCP_Surface surface = CCCP_NewSurface(width, height, (color_t){0.0f, 0.0f, 0.0f, 1.0f});
+    if (!surface) return NULL;
+
+    for (unsigned int y = 0; y < height; y++) {
+        for (unsigned int x = 0; x < width; x++) {
+            float nx = (float)x / scale + offsetX;
+            float ny = (float)y / scale + offsetY;
+            float noise = fbm(nx, ny, 0.0f, lacunarity, gain, octaves, perlin_noise);
+            // Convert from [-1, 1] to [0, 255]
+            uint8_t gray = (uint8_t)((noise + 1.0f) * 0.5f * 255.0f);
+            color_t color = {gray / 255.0f, gray / 255.0f, gray / 255.0f, 1.0f};
+            CCCP_SetPixel(surface, x, y, color);
+        }
+    }
+    return surface;
+}
+
+CCCP_Surface CCCP_SurfaceFromHorizontalGradient(unsigned int width, unsigned int height, color_t startColor, color_t endColor) {
+    CCCP_Surface surface = CCCP_NewSurface(width, height, (color_t){0.0f, 0.0f, 0.0f, 1.0f});
+    if (!surface) return NULL;
+
+    for (unsigned int y = 0; y < height; y++) {
+        for (unsigned int x = 0; x < width; x++) {
+            float t = (float)x / (float)(width - 1);
+            color_t color = {
+                startColor.r + t * (endColor.r - startColor.r),
+                startColor.g + t * (endColor.g - startColor.g),
+                startColor.b + t * (endColor.b - startColor.b),
+                startColor.a + t * (endColor.a - startColor.a)
+            };
+            CCCP_SetPixel(surface, x, y, color);
+        }
+    }
+    return surface;
+}
+
+CCCP_Surface CCCP_SurfaceFromVerticalGradient(unsigned int width, unsigned int height, color_t startColor, color_t endColor) {
+    CCCP_Surface surface = CCCP_NewSurface(width, height, (color_t){0.0f, 0.0f, 0.0f, 1.0f});
+    if (!surface) return NULL;
+
+    for (unsigned int y = 0; y < height; y++) {
+        for (unsigned int x = 0; x < width; x++) {
+            float t = (float)y / (float)(height - 1);
+            color_t color = {
+                startColor.r + t * (endColor.r - startColor.r),
+                startColor.g + t * (endColor.g - startColor.g),
+                startColor.b + t * (endColor.b - startColor.b),
+                startColor.a + t * (endColor.a - startColor.a)
+            };
+            CCCP_SetPixel(surface, x, y, color);
+        }
+    }
+    return surface;
+}
+
+CCCP_Surface CCCP_SurfaceFromRadialGradient(unsigned int width, unsigned int height, color_t centerColor, color_t edgeColor) {
+    CCCP_Surface surface = CCCP_NewSurface(width, height, (color_t){0.0f, 0.0f, 0.0f, 1.0f});
+    if (!surface) return NULL;
+
+    float centerX = (float)width / 2.0f;
+    float centerY = (float)height / 2.0f;
+    float maxDist = sqrtf(centerX * centerX + centerY * centerY);
+
+    for (unsigned int y = 0; y < height; y++) {
+        for (unsigned int x = 0; x < width; x++) {
+            float dx = (float)x - centerX;
+            float dy = (float)y - centerY;
+            float dist = sqrtf(dx * dx + dy * dy);
+            float t = dist / maxDist;
+            t = fminf(t, 1.0f); // Clamp to 1.0
+            color_t color = {
+                centerColor.r + t * (edgeColor.r - centerColor.r),
+                centerColor.g + t * (edgeColor.g - centerColor.g),
+                centerColor.b + t * (edgeColor.b - centerColor.b),
+                centerColor.a + t * (edgeColor.a - centerColor.a)
+            };
+            CCCP_SetPixel(surface, x, y, color);
+        }
+    }
+    return surface;
+}
+
+CCCP_Surface CCCP_SurfaceFromDiagonalGradient(unsigned int width, unsigned int height, color_t startColor, color_t endColor) {
+    CCCP_Surface surface = CCCP_NewSurface(width, height, (color_t){0.0f, 0.0f, 0.0f, 1.0f});
+    if (!surface) return NULL;
+
+    for (unsigned int y = 0; y < height; y++) {
+        for (unsigned int x = 0; x < width; x++) {
+            float t = ((float)x / (float)(width - 1) + (float)y / (float)(height - 1)) / 2.0f;
+            color_t color = {
+                startColor.r + t * (endColor.r - startColor.r),
+                startColor.g + t * (endColor.g - startColor.g),
+                startColor.b + t * (endColor.b - startColor.b),
+                startColor.a + t * (endColor.a - startColor.a)
+            };
+            CCCP_SetPixel(surface, x, y, color);
+        }
+    }
+    return surface;
+}
+
+CCCP_Surface CCCP_SurfaceFromCheckerboard(unsigned int width, unsigned int height, color_t color1, color_t color2, unsigned int squareSize) {
+    CCCP_Surface surface = CCCP_NewSurface(width, height, (color_t){0.0f, 0.0f, 0.0f, 1.0f});
+    if (!surface) return NULL;
+
+    for (unsigned int y = 0; y < height; y++) {
+        for (unsigned int x = 0; x < width; x++) {
+            unsigned int gridX = x / squareSize;
+            unsigned int gridY = y / squareSize;
+            color_t color = ((gridX + gridY) % 2 == 0) ? color1 : color2;
+            CCCP_SetPixel(surface, x, y, color);
+        }
+    }
+    return surface;
+}
+
+CCCP_Surface CCCP_SurfaceFromHorizontalStripes(unsigned int width, unsigned int height, color_t color1, color_t color2, unsigned int stripeWidth) {
+    CCCP_Surface surface = CCCP_NewSurface(width, height, (color_t){0.0f, 0.0f, 0.0f, 1.0f});
+    if (!surface) return NULL;
+
+    for (unsigned int y = 0; y < height; y++) {
+        for (unsigned int x = 0; x < width; x++) {
+            unsigned int stripeIndex = y / stripeWidth;
+            color_t color = (stripeIndex % 2 == 0) ? color1 : color2;
+            CCCP_SetPixel(surface, x, y, color);
+        }
+    }
+    return surface;
+}
+
+CCCP_Surface CCCP_SurfaceFromVerticalStripes(unsigned int width, unsigned int height, color_t color1, color_t color2, unsigned int stripeWidth) {
+    CCCP_Surface surface = CCCP_NewSurface(width, height, (color_t){0.0f, 0.0f, 0.0f, 1.0f});
+    if (!surface) return NULL;
+
+    for (unsigned int y = 0; y < height; y++) {
+        for (unsigned int x = 0; x < width; x++) {
+            unsigned int stripeIndex = x / stripeWidth;
+            color_t color = (stripeIndex % 2 == 0) ? color1 : color2;
+            CCCP_SetPixel(surface, x, y, color);
+        }
+    }
+    return surface;
+}
+
+CCCP_Surface CCCP_SurfaceFromConcentricCircles(unsigned int width, unsigned int height, color_t centerColor, color_t edgeColor, unsigned int numRings) {
+    CCCP_Surface surface = CCCP_NewSurface(width, height, (color_t){0.0f, 0.0f, 0.0f, 1.0f});
+    if (!surface) return NULL;
+
+    float centerX = (float)width / 2.0f;
+    float centerY = (float)height / 2.0f;
+    float maxDist = sqrtf(centerX * centerX + centerY * centerY);
+
+    for (unsigned int y = 0; y < height; y++) {
+        for (unsigned int x = 0; x < width; x++) {
+            float dx = (float)x - centerX;
+            float dy = (float)y - centerY;
+            float dist = sqrtf(dx * dx + dy * dy);
+            float ringIndex = (dist / maxDist) * (float)numRings;
+            color_t color = (fmodf(ringIndex, 2.0f) < 1.0f) ? centerColor : edgeColor;
+            CCCP_SetPixel(surface, x, y, color);
+        }
+    }
+    return surface;
+}
+

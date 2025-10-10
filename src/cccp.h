@@ -157,6 +157,24 @@ CCCP_Surface CCCP_RotateSurface(CCCP_Surface surface, float angle);
 CCCP_Surface CCCP_FlipSurface(CCCP_Surface surface, bool horizontal, bool vertical);
 CCCP_Surface CCCP_ClipSurface(CCCP_Surface surface, int x, int y, int w, int h);
 
+CCCP_Surface CCCP_SurfaceFromPerlinNoise(unsigned int width, unsigned int height, float scale, float offsetX, float offsetY);
+CCCP_Surface CCCP_SurfaceFromSimplexNoise(unsigned int width, unsigned int height, float scale, float offsetX, float offsetY);
+CCCP_Surface CCCP_SurfaceFromWorleyNoise(unsigned int width, unsigned int height, float scale, float offsetX, float offsetY);
+CCCP_Surface CCCP_SurfaceFromValueNoise(unsigned int width, unsigned int height, float scale, float offsetX, float offsetY);
+CCCP_Surface CCCP_SurfaceFromWhiteNoise(unsigned int width, unsigned int height, float scale, float offsetX, float offsetY);
+CCCP_Surface CCCP_SurfaceFromFBMNoise(unsigned int width, unsigned int height, float scale, float offsetX, float offsetY, float lacunarity, float gain, int octaves);
+
+CCCP_Surface CCCP_SurfaceFromHorizontalGradient(unsigned int width, unsigned int height, color_t startColor, color_t endColor);
+CCCP_Surface CCCP_SurfaceFromVerticalGradient(unsigned int width, unsigned int height, color_t startColor, color_t endColor);
+CCCP_Surface CCCP_SurfaceFromRadialGradient(unsigned int width, unsigned int height, color_t centerColor, color_t edgeColor);
+CCCP_Surface CCCP_SurfaceFromDiagonalGradient(unsigned int width, unsigned int height, color_t startColor, color_t endColor);
+
+CCCP_Surface CCCP_SurfaceFromCheckerboard(unsigned int width, unsigned int height, color_t color1, color_t color2, unsigned int squareSize);
+
+CCCP_Surface CCCP_SurfaceFromHorizontalStripes(unsigned int width, unsigned int height, color_t color1, color_t color2, unsigned int stripeWidth);
+CCCP_Surface CCCP_SurfaceFromVerticalStripes(unsigned int width, unsigned int height, color_t color1, color_t color2, unsigned int stripeWidth);
+CCCP_Surface CCCP_SurfaceFromConcentricCircles(unsigned int width, unsigned int height, color_t centerColor, color_t edgeColor, unsigned int numRings);
+
 CCCP_Shader CCCP_NewShader(CCCP_ShaderFunc func, int numThreads);
 void CCCP_DestroyShader(CCCP_Shader *shader);
 void CCCP_ApplyShader(CCCP_Surface surface, CCCP_Shader *shader, void* userdata);
@@ -207,6 +225,19 @@ float CCCP_GetMusicTimeLength(CCCP_AudioContext* ctx, const char* key);
 float CCCP_GetMusicTimePlayed(CCCP_AudioContext* ctx, const char* key);
 void CCCP_SetMusicLooping(CCCP_AudioContext* ctx, const char* key, bool looping);
 bool CCCP_IsMusicLooping(CCCP_AudioContext* ctx, const char* key);
+
+/* === TIMER === */
+
+typedef struct CCCP_Timer CCCP_Timer;
+
+CCCP_Timer* CCCP_NewTimer(void);
+void CCCP_DestroyTimer(CCCP_Timer* timer);
+void CCCP_StartTimer(CCCP_Timer* timer);
+void CCCP_StopTimer(CCCP_Timer* timer);
+void CCCP_PauseTimer(CCCP_Timer* timer);
+void CCCP_ResumeTimer(CCCP_Timer* timer);
+double CCCP_GetElapsedTime(CCCP_Timer* timer);
+void CCCP_Sleep(double seconds);
 
 /* === HASH TABLE === */
 
