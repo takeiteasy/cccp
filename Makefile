@@ -1,50 +1,54 @@
 ifeq ($(OS),Windows_NT)
-	include windows.Makefile
+	LIBEXT=dll
+	PROGEXT=.exe
+	CFLAGS:=-g -Wall -Wno-missing-braces -fenable-matrix -Ideps
+	LINKER:=-lgdi32	include windows.Makefile
 else
 	UNAME:=$(shell uname -s)
+	PROGEXT=
 	ifeq ($(UNAME),Darwin)
-		include macos.Makefile
+		LIBEXT=dylib
+		CFLAGS:=-g -Wall -Wno-missing-braces -fenable-matrix -Ideps
+		LINKER:=-lpthread -framework Cocoa
 	else ifeq ($(UNAME),Linux)
-		include linux.Makefile
+		LIBEXT=so
+		CFLAGS:=-g -Wall -Wno-missing-braces -fenable-matrix -Ideps
+		LINKER:=-lpthread -lX11 -lm
 	else
 		$(error OS not supported by this Makefile)
 	endif
 endif
 
-default: all
-
-BUILD=build
-CFLAGS = -Isrc -Ideps
-LINK = src/rng.c -L$(BUILD) -lpb
-
-$(BUILD)/:
-	mkdir -p $(BUILD)
-
-libpb: $(BUILD)/
-	$(CC) -shared -fpic $(CFLAGS) $(SYSFLAGS) src/$(BACKEND).c -o $(BUILD)/libpb.$(LIBEXT)
-
-program: libpb
-	$(CC) $(CFLAGS) src/fwp.c $(LINK) -o $(BUILD)/fwp$(PROGEXT)
-
-test-web: libpb
-	emcc $(CFLAGS) src/pb_emscripten.c templates/pb_boilerplate.c -o $(BUILD)/fwp_web.html
-
-SRC := scenes
 BIN := build
-TARGETS := $(foreach file,$(foreach src,$(wildcard $(SRC)/*.c),$(notdir $(src))),$(patsubst %.c,$(BIN)/%.$(LIBEXT),$(file)))
+SRCS:=$(filter-out src/cccp.c, $(wildcard src/*.c))
+OBJS:=$(SRCS:.c=.o)
+OUT:=$(BIN)/cccp$(PROGEXT)
 
-.PHONY: FORCE scenes
+SCENES:=examples
+TARGETS:=$(foreach file,$(foreach src,$(wildcard $(SCENES)/*.c),$(notdir $(src))),$(patsubst %.c,$(BIN)/%.$(LIBEXT),$(file)))
+
+default: $(OUT) clean
+
+$(OUT): $(OBJS)
+	$(CC) $(CFLAGS) $(LINKER) -o $@ $^
+
+run:
+	./cccp$(PROGEXT)
+
+clean:
+	$(RM) $(OBJS)
+
+veryclean:
+	$(RM) $(OBJS)
+	$(RM) -r $(BIN)/**
 
 FORCE: ;
 
-$(BIN)/%.$(LIBEXT): $(SRC)/%.c FORCE | $(BIN)
-	$(CC) -shared -fpic $(CFLAGS) $(LINK) -o $@ $<
+$(BIN)/%.$(LIBEXT): $(SCENES)/%.c FORCE | $(BIN)
+	$(CC) $(LINKER) -Isrc -shared -fpic $(CFLAGS) -o $@ src/cccp.c $<
 
 scenes: $(TARGETS)
 
-all: program scenes
+all: veryclean $(OUT) scenes clean
 
-clean:
-	$(RM) -rf $(BUILD)
-
-.PHONY: program libpb clean
+.PHONY: clean veryclean all scenes run

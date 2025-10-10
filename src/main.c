@@ -1,37 +1,21 @@
-/* fwp.c -- https://github.com/takeiteasy/fun-with-pixels
+#define PAUL_IMPLEMENTATION
+#include "cccp.h"
+#include "window.h"
 
- fun-with-pixels
-
- Copyright (C) 2024  George Watson
-
- This program is free software: you can redistribute it and/or modify
- it under the terms of the GNU General Public License as published by
- the Free Software Foundation, either version 3 of the License, or
- (at your option) any later version.
-
- This program is distributed in the hope that it will be useful,
- but WITHOUT ANY WARRANTY; without even the implied warranty of
- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- GNU General Public License for more details.
-
- You should have received a copy of the GNU General Public License
- along with this program.  If not, see <https://www.gnu.org/licenses/>. */
-
-#define FWP_COMMAND_LINE
-#include "fwp.h"
-
-#define PLATFORM_POSIX
-#if defined(__APPLE__) || defined(__MACH__)
-#define PLATFORM_MAC
-#elif defined(_WIN32) || defined(_WIN64)
-#define PLATFORM_WINDOWS
-#if !defined(PLATFORM_FORCE_POSIX)
-#undef PLATFORM_POSIX
+#ifndef WINDOW_WIDTH
+#define WINDOW_WIDTH 640
 #endif
-#elif defined(__gnu_linux__) || defined(__linux__) || defined(__unix__)
-#define PLATFORM_LINUX
-#else
-#error Unknown platform
+#ifndef WINDOW_HEIGHT
+#define WINDOW_HEIGHT 480
+#endif
+#ifndef WINDOW_TITLE
+#define WINDOW_TITLE "CCCP"
+#endif
+#ifndef CLEAR_COLOR
+#define CLEAR_COLOR rgb(0, 0, 0)
+#endif
+#ifndef TARGET_FPS
+#define TARGET_FPS 60
 #endif
 
 #if defined(PLATFORM_WINDOWS)
@@ -66,14 +50,16 @@ static struct {
     ino_t handleID;
 #endif
     void *handle;
-    fwpState *state;
-    fwpScene *scene;
-    pbImage *buffer;
+    CCCP_State *state;
+    CCCP_Scene *scene;
+    CCCP_Surface buffer;
+    CCCP_AudioContext* audio;
+    CCCP_Timer* frame_timer;
     struct {
         unsigned int width;
         unsigned int height;
         const char *title;
-        pbFlags flags;
+        CCCP_WindowFlags flags;
         char *path;
     } args;
 } state;
@@ -90,9 +76,9 @@ static struct option long_options[] = {
 };
 
 static void usage(void) {
-    puts(" usage: fwp [path to dylib] [options]");
+    puts(" usage: cccp [path to dylib] [options]");
     puts("");
-    puts(" fun-with-pixels  Copyright (C) 2024  George Watson");
+    puts(" cccp  Copyright (C) 2024  George Watson");
     puts(" This program comes with ABSOLUTELY NO WARRANTY; for details type `show w'.");
     puts(" This is free software, and you are welcome to redistribute it");
     puts(" under certain conditions; type `show c' for details.");
@@ -106,7 +92,7 @@ static void usage(void) {
     puts("      -u/--usage     Display this message");
 }
 
-#if defined(PLATFORM_WINDOWS)
+#ifdef _WIN32
 static FILETIME Win32GetLastWriteTime(char* path) {
     FILETIME time;
     WIN32_FILE_ATTRIBUTE_DATA data;
@@ -119,7 +105,7 @@ static FILETIME Win32GetLastWriteTime(char* path) {
 #endif
 
 static int ShouldReloadLibrary(void) {
-#if defined(PLATFORM_WINDOWS)
+#ifdef _WIN32
     FILETIME newTime = Win32GetLastWriteTime(state.args.path);
     int result = CompareFileTime(&newTime, &state.writeTime);
     if (result)
@@ -134,7 +120,7 @@ static int ShouldReloadLibrary(void) {
 #endif
 }
 
-#if defined(PLATFORM_WINDOWS)
+#ifdef _WIN32
 char* RemoveExt(char* path) {
     char *ret = malloc(strlen(path) + 1);
     if (!ret)
@@ -153,7 +139,7 @@ static int ReloadLibrary(const char *path) {
 
     if (state.handle) {
         if (state.scene->unload)
-            state.scene->unload(state.state);
+            state.scene->unload(state.state, state.audio);
         dlclose(state.handle);
     }
 
@@ -175,18 +161,18 @@ static int ReloadLibrary(const char *path) {
         goto BAIL;
     if (!state.state) {
         if (state.scene->windowWidth > 0 && state.scene->windowHeight > 0)
-            pbSetWindowSize(state.scene->windowWidth, state.scene->windowHeight);
+            WindowSetSize(state.scene->windowWidth, state.scene->windowHeight);
         if (state.scene->windowTitle)
-            pbSetWindowTitle(state.scene->windowTitle);
-        if (!(state.state = state.scene->init(state.buffer)))
+            WindowSetTitle(state.scene->windowTitle);
+        if (!(state.state = state.scene->init(state.buffer, state.audio)))
             goto BAIL;
     } else {
         if (state.scene->windowWidth > 0 && state.scene->windowHeight > 0)
-            pbSetWindowSize(state.scene->windowWidth, state.scene->windowHeight);
+            WindowSetSize(state.scene->windowWidth, state.scene->windowHeight);
         if (state.scene->windowTitle)
-            pbSetWindowTitle(state.scene->windowTitle);
+            WindowSetTitle(state.scene->windowTitle);
         if (state.scene->reload)
-            state.scene->reload(state.state);
+            state.scene->reload(state.state, state.audio);
     }
     return 1;
 
@@ -202,36 +188,36 @@ BAIL:
     return 0;
 }
 
-#define pbInputCallback(E)                    \
-    if (state.scene->event)                   \
-        state.scene->event(state.state, &(E)) \
+#define CCCP_Callback(E)    \
+    if (state.scene->event) \
+        state.scene->event(state.state, &(E), state.audio)
 
-static void pbInputKeyboard(void *userdata, int key, int modifier, int isDown) {
-    pbEvent e = {
+static void CCCP_Keyboard(void *userdata, int key, int modifier, int isDown) {
+    CCCP_Event e = {
         .type = KeyboardEvent,
         .keyboard = {
             .key = key,
-            .isdown = isDown
+            .down = isDown
         },
         .modifier = modifier
     };
-    pbInputCallback(e);
+    CCCP_Callback(e);
 }
 
-static void pbInputMouseButton(void *userdata, int button, int modifier, int isDown) {
-    pbEvent e = {
+static void CCCP_MouseButton(void *userdata, int button, int modifier, int isDown) {
+    CCCP_Event e = {
         .type = MouseButtonEvent,
         .mouse = {
             .button = button,
-            .isdown = isDown
+            .down = isDown
         },
         .modifier = modifier
     };
-    pbInputCallback(e);
+    CCCP_Callback(e);
 }
 
-static void pbInputMouseMove(void *userdata, int x, int y, float dx, float dy) {
-    pbEvent e = {
+static void CCCP_MouseMove(void *userdata, int x, int y, float dx, float dy) {
+    CCCP_Event e = {
         .type = MouseMoveEvent,
         .mouse = {
             .position = {
@@ -242,11 +228,11 @@ static void pbInputMouseMove(void *userdata, int x, int y, float dx, float dy) {
             }
         }
     };
-    pbInputCallback(e);
+    CCCP_Callback(e);
 }
 
-static void pbInputMouseScroll(void *userdata, float dx, float dy, int modifier) {
-    pbEvent e = {
+static void CCCP_MouseScroll(void *userdata, float dx, float dy, int modifier) {
+    CCCP_Event e = {
         .type = MouseScrollEvent,
         .mouse = {
             .wheel = {
@@ -255,21 +241,21 @@ static void pbInputMouseScroll(void *userdata, float dx, float dy, int modifier)
             }
         }
     };
-    pbInputCallback(e);
+    CCCP_Callback(e);
 }
 
-static void pbInputFocus(void *userdata, int isFocused) {
-    pbEvent e = {
+static void CCCP_Focus(void *userdata, int isFocused) {
+    CCCP_Event e = {
         .type = FocusEvent,
         .window = {
             .focused = isFocused
         }
     };
-    pbInputCallback(e);
+    CCCP_Callback(e);
 }
 
-static void pbInputResized(void *userdata, int w, int h) {
-    pbEvent e = {
+static void CCCP_Resized(void *userdata, int w, int h) {
+    CCCP_Event e = {
         .type = ResizedEvent,
         .window = {
             .size = {
@@ -278,17 +264,7 @@ static void pbInputResized(void *userdata, int w, int h) {
             }
         }
     };
-    pbInputCallback(e);
-}
-
-static void pbInputClosed(void *userdata) {
-    pbEvent e = {
-        .type = ClosedEvent,
-        .window = {
-            .closed = true
-        }
-    };
-    pbInputCallback(e);
+    CCCP_Callback(e);
 }
 
 int main(int argc, char *argv[]) {
@@ -308,10 +284,10 @@ int main(int argc, char *argv[]) {
                 state.args.title = optarg;
                 break;
             case 'r':
-                state.args.flags |= pbResizable;
+                state.args.flags |= WINDOW_RESIZABLE;
                 break;
             case 'a':
-                state.args.flags |= pbAlwaysOnTop;
+                state.args.flags |= WINDOW_ALWAYS_ON_TOP;
                 break;
             case ':':
                 printf("ERROR: \"-%c\" requires an value!\n", optopt);
@@ -334,9 +310,9 @@ int main(int argc, char *argv[]) {
         puts("ERROR: No path to dynamic library provided");
         usage();
         return 0;
-    } else {
+    } else
         state.args.path = argv[optind];
-    }
+    
     if (state.args.path) {
 #if !defined(PLATFORM_WINDOWS)
         if (state.args.path[0] != '.' || state.args.path[1] != '/') {
@@ -354,38 +330,68 @@ int main(int argc, char *argv[]) {
     }
 
     if (!state.args.width)
-        state.args.width = 640;
+        state.args.width = WINDOW_WIDTH;
     if (!state.args.height)
-        state.args.height = 480;
+        state.args.height = WINDOW_HEIGHT;
     if (!state.args.title)
-        state.args.title = "fwp";
-    pbBegin(state.args.width, state.args.height, state.args.title, state.args.flags);
+        state.args.title = WINDOW_TITLE;
 
-    if (!(state.buffer = pbImageNew(state.args.width, state.args.height)))
+    if (!WindowOpen(800, 600, "CCCP", WINDOW_RESIZABLE)) {
+        fprintf(stderr, "Failed to open window!\n");
+        return 1;
+    }
+
+    InitAudioDevice();
+
+    state.frame_timer = CCCP_NewTimer();
+    CCCP_StartTimer(state.frame_timer);
+
+    if (!(state.buffer = CCCP_NewSurface(state.args.width, state.args.height, rgb(0, 0, 0))))
         return 0;
 
     if (!ReloadLibrary(state.args.path))
         return 0;
 
-#define X(NAME, _) pbInput##NAME,
-    pbCallbacks(FWP_PB_CALLBACKS NULL);
+#define X(NAME, _) CCCP_Set##NAME##Callback(CCCP_##NAME);
+    CCCP_CALLBACKS
 #undef X
 
-    while (pbPoll()) {
+    while (WindowPoll()) {
+        double delta = CCCP_GetElapsedTime(state.frame_timer);
+        CCCP_StartTimer(state.frame_timer);
+        CCCP_ClearSurface(state.buffer, state.scene->clearColor);
         if (!ReloadLibrary(state.args.path))
             break;
-        if (!state.scene->tick(state.state, state.buffer, 0.f))
+        // TODO: Loop through music streams and update them
+        CCCP_HashEntry* entry = state.audio->music->buckets;
+        while (entry) {
+            Music *music = (Music*)entry->value;
+            if (music && IsMusicStreamPlaying(*music))
+                UpdateMusicStream(*music);
+            entry = entry->next;
+        }
+        if (!state.scene->tick(state.state, state.buffer, state.audio, delta))
             break;
-        pbFlush(state.buffer);
+        WindowFlush(state.buffer);
+        int target_fps = state.scene && state.scene->targetFPS > 0 ? state.scene->targetFPS : TARGET_FPS;
+        double frame_time = 1.0 / target_fps;
+        if (delta < frame_time)
+            CCCP_Sleep(frame_time - delta);
     }
 
-    state.scene->deinit(state.state);
+    state.scene->deinit(state.state, state.audio);
     if (state.handle)
         dlclose(state.handle);
-    pbImageFree(state.buffer);
+    CCCP_DestroySurface(state.buffer);
 #if !defined(PLATFORM_WINDOWS)
     free(state.args.path);
 #endif
-    pbEnd();
-    return 1;
+    CCCP_DestroyTimer(state.frame_timer);
+    free(state.audio);
+    CCCP_DestroyHashTable(state.audio->waves);
+    CCCP_DestroyHashTable(state.audio->sounds);
+    CCCP_DestroyHashTable(state.audio->music);
+    CloseAudioDevice();
+    WindowClose();
+    return 0;
 }
