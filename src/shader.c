@@ -13,14 +13,11 @@ typedef struct {
 CCCP_Shader CCCP_NewShader(CCCP_ShaderFunc func, int numThreads) {
     return (CCCP_Shader){
         .func = func,
-        .thread_count = numThreads <= 0 ? thread_hardware_concurrency() : numThreads,
-        .pool = NULL
+        .thread_count = numThreads <= 0 ? thread_hardware_concurrency() : numThreads
     };
 }
 
 void CCCP_DestroyShader(CCCP_Shader *shader) {
-    if (shader->pool)
-        thrd_pool_destroy(shader->pool);
     memset(shader, 0, sizeof(CCCP_Shader));
 }
 
@@ -40,15 +37,13 @@ static void CCCP_ShaderWorker(void *arg) {
     free(job);
 }
 
-void CCCP_ApplyShader(CCCP_Surface surface, CCCP_Shader *shader, void* userdata) {
-    if (shader->pool)
-        goto BAIL;
-    if (!(shader->pool = thrd_pool_create(shader->thread_count <= 0 ? thread_hardware_concurrency() : shader->thread_count, 0)))
-        return;
+bool CCCP_ApplyShader(CCCP_Surface surface, CCCP_Shader *shader, void* userdata) {
+    thrd_pool_t *pool = thrd_pool_create(shader->thread_count <= 0 ? thread_hardware_concurrency() : shader->thread_count, 0);
     int w = CCCP_SurfaceWidth(surface);
     int h = CCCP_SurfaceHeight(surface);
     int nx = (w + CHUNK_WIDTH - 1) / CHUNK_WIDTH;
     int ny = (h + CHUNK_HEIGHT - 1) / CHUNK_HEIGHT;
+    bool result = false;
     for (int j = 0; j < ny; ++j) {
         for (int i = 0; i < nx; ++i) {
             ShaderJob *job = malloc(sizeof(ShaderJob));
@@ -61,11 +56,12 @@ void CCCP_ApplyShader(CCCP_Surface surface, CCCP_Shader *shader, void* userdata)
             job->userdata = userdata;
             job->func = shader->func;
             job->surface = surface;
-            thrd_pool_submit(shader->pool, CCCP_ShaderWorker, job, NULL);
+            thrd_pool_submit(pool, CCCP_ShaderWorker, job, NULL);
         }
     }
+    result = true;
 BAIL:
-    thrd_pool_wait(shader->pool);
-    thrd_pool_destroy(shader->pool);
-    shader->pool = NULL;
+    thrd_pool_wait(pool);
+    thrd_pool_destroy(pool);
+    return result;
 }

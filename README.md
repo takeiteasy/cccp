@@ -10,7 +10,7 @@ The *C* *C*reative *C*oding *P*roject
     - [ ] Export surface to image file (stb_image_write + qoi)
 - [X] ~~Shaders (multithreaded software renderer)~~
 - [X] ~~Generate noise, gradient surfaces, etc.~~
-- [ ] Text rendering (font8x8 + stb_truetype)
+- [ ] Text rendering (~~font8x8~~ + stb_truetype)
 - [X] ~~Target FPS control~~
 - [X] ~~Audio management~~ (raudio)
 - [ ] Dynamic rebuilding of scenes (dmon)

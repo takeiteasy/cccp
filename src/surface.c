@@ -5,6 +5,7 @@
 #include "qoi.h"
 #define PAUL_RANDOM_IMPLEMENTATION
 #include "paul_random.h"
+#include "font8x8.h"
 
 CCCP_Surface CCCP_NewSurface(unsigned int w, unsigned int h, color_t clearColor) {
     return bitmap_empty(w, h, clearColor);
@@ -114,9 +115,10 @@ CCCP_Surface CCCP_ClipSurface(CCCP_Surface surface, int x, int y, int w, int h) 
 
 CCCP_Surface CCCP_SurfaceFromPerlinNoise(unsigned int width, unsigned int height, float scale, float offsetX, float offsetY) {
     CCCP_Surface surface = CCCP_NewSurface(width, height, (color_t){0.0f, 0.0f, 0.0f, 1.0f});
-    if (!surface) return NULL;
+    if (!surface)
+        return NULL;
 
-    for (unsigned int y = 0; y < height; y++) {
+    for (unsigned int y = 0; y < height; y++)
         for (unsigned int x = 0; x < width; x++) {
             float nx = (float)x / scale + offsetX;
             float ny = (float)y / scale + offsetY;
@@ -126,15 +128,15 @@ CCCP_Surface CCCP_SurfaceFromPerlinNoise(unsigned int width, unsigned int height
             color_t color = {gray / 255.0f, gray / 255.0f, gray / 255.0f, 1.0f};
             CCCP_SetPixel(surface, x, y, color);
         }
-    }
     return surface;
 }
 
 CCCP_Surface CCCP_SurfaceFromSimplexNoise(unsigned int width, unsigned int height, float scale, float offsetX, float offsetY) {
     CCCP_Surface surface = CCCP_NewSurface(width, height, (color_t){0.0f, 0.0f, 0.0f, 1.0f});
-    if (!surface) return NULL;
+    if (!surface)
+        return NULL;
 
-    for (unsigned int y = 0; y < height; y++) {
+    for (unsigned int y = 0; y < height; y++)
         for (unsigned int x = 0; x < width; x++) {
             float nx = (float)x / scale + offsetX;
             float ny = (float)y / scale + offsetY;
@@ -144,15 +146,15 @@ CCCP_Surface CCCP_SurfaceFromSimplexNoise(unsigned int width, unsigned int heigh
             color_t color = {gray / 255.0f, gray / 255.0f, gray / 255.0f, 1.0f};
             CCCP_SetPixel(surface, x, y, color);
         }
-    }
     return surface;
 }
 
 CCCP_Surface CCCP_SurfaceFromWorleyNoise(unsigned int width, unsigned int height, float scale, float offsetX, float offsetY) {
     CCCP_Surface surface = CCCP_NewSurface(width, height, (color_t){0.0f, 0.0f, 0.0f, 1.0f});
-    if (!surface) return NULL;
+    if (!surface)
+        return NULL;
 
-    for (unsigned int y = 0; y < height; y++) {
+    for (unsigned int y = 0; y < height; y++)
         for (unsigned int x = 0; x < width; x++) {
             float nx = (float)x / scale + offsetX;
             float ny = (float)y / scale + offsetY;
@@ -162,15 +164,15 @@ CCCP_Surface CCCP_SurfaceFromWorleyNoise(unsigned int width, unsigned int height
             color_t color = {gray / 255.0f, gray / 255.0f, gray / 255.0f, 1.0f};
             CCCP_SetPixel(surface, x, y, color);
         }
-    }
     return surface;
 }
 
 CCCP_Surface CCCP_SurfaceFromValueNoise(unsigned int width, unsigned int height, float scale, float offsetX, float offsetY) {
     CCCP_Surface surface = CCCP_NewSurface(width, height, (color_t){0.0f, 0.0f, 0.0f, 1.0f});
-    if (!surface) return NULL;
+    if (!surface)
+        return NULL;
 
-    for (unsigned int y = 0; y < height; y++) {
+    for (unsigned int y = 0; y < height; y++)
         for (unsigned int x = 0; x < width; x++) {
             float nx = (float)x / scale + offsetX;
             float ny = (float)y / scale + offsetY;
@@ -180,15 +182,15 @@ CCCP_Surface CCCP_SurfaceFromValueNoise(unsigned int width, unsigned int height,
             color_t color = {gray / 255.0f, gray / 255.0f, gray / 255.0f, 1.0f};
             CCCP_SetPixel(surface, x, y, color);
         }
-    }
     return surface;
 }
 
 CCCP_Surface CCCP_SurfaceFromWhiteNoise(unsigned int width, unsigned int height, float scale, float offsetX, float offsetY) {
     CCCP_Surface surface = CCCP_NewSurface(width, height, (color_t){0.0f, 0.0f, 0.0f, 1.0f});
-    if (!surface) return NULL;
+    if (!surface)
+        return NULL;
 
-    for (unsigned int y = 0; y < height; y++) {
+    for (unsigned int y = 0; y < height; y++)
         for (unsigned int x = 0; x < width; x++) {
             float nx = (float)x / scale + offsetX;
             float ny = (float)y / scale + offsetY;
@@ -198,15 +200,15 @@ CCCP_Surface CCCP_SurfaceFromWhiteNoise(unsigned int width, unsigned int height,
             color_t color = {gray / 255.0f, gray / 255.0f, gray / 255.0f, 1.0f};
             CCCP_SetPixel(surface, x, y, color);
         }
-    }
     return surface;
 }
 
 CCCP_Surface CCCP_SurfaceFromFBMNoise(unsigned int width, unsigned int height, float scale, float offsetX, float offsetY, float lacunarity, float gain, int octaves) {
     CCCP_Surface surface = CCCP_NewSurface(width, height, (color_t){0.0f, 0.0f, 0.0f, 1.0f});
-    if (!surface) return NULL;
+    if (!surface)
+        return NULL;
 
-    for (unsigned int y = 0; y < height; y++) {
+    for (unsigned int y = 0; y < height; y++) 
         for (unsigned int x = 0; x < width; x++) {
             float nx = (float)x / scale + offsetX;
             float ny = (float)y / scale + offsetY;
@@ -216,15 +218,15 @@ CCCP_Surface CCCP_SurfaceFromFBMNoise(unsigned int width, unsigned int height, f
             color_t color = {gray / 255.0f, gray / 255.0f, gray / 255.0f, 1.0f};
             CCCP_SetPixel(surface, x, y, color);
         }
-    }
     return surface;
 }
 
 CCCP_Surface CCCP_SurfaceFromHorizontalGradient(unsigned int width, unsigned int height, color_t startColor, color_t endColor) {
     CCCP_Surface surface = CCCP_NewSurface(width, height, (color_t){0.0f, 0.0f, 0.0f, 1.0f});
-    if (!surface) return NULL;
+    if (!surface)
+        return NULL;
 
-    for (unsigned int y = 0; y < height; y++) {
+    for (unsigned int y = 0; y < height; y++)
         for (unsigned int x = 0; x < width; x++) {
             float t = (float)x / (float)(width - 1);
             color_t color = {
@@ -235,15 +237,15 @@ CCCP_Surface CCCP_SurfaceFromHorizontalGradient(unsigned int width, unsigned int
             };
             CCCP_SetPixel(surface, x, y, color);
         }
-    }
     return surface;
 }
 
 CCCP_Surface CCCP_SurfaceFromVerticalGradient(unsigned int width, unsigned int height, color_t startColor, color_t endColor) {
     CCCP_Surface surface = CCCP_NewSurface(width, height, (color_t){0.0f, 0.0f, 0.0f, 1.0f});
-    if (!surface) return NULL;
+    if (!surface)
+        return NULL;
 
-    for (unsigned int y = 0; y < height; y++) {
+    for (unsigned int y = 0; y < height; y++)
         for (unsigned int x = 0; x < width; x++) {
             float t = (float)y / (float)(height - 1);
             color_t color = {
@@ -254,19 +256,18 @@ CCCP_Surface CCCP_SurfaceFromVerticalGradient(unsigned int width, unsigned int h
             };
             CCCP_SetPixel(surface, x, y, color);
         }
-    }
     return surface;
 }
 
 CCCP_Surface CCCP_SurfaceFromRadialGradient(unsigned int width, unsigned int height, color_t centerColor, color_t edgeColor) {
     CCCP_Surface surface = CCCP_NewSurface(width, height, (color_t){0.0f, 0.0f, 0.0f, 1.0f});
-    if (!surface) return NULL;
+    if (!surface)
+        return NULL;
 
     float centerX = (float)width / 2.0f;
     float centerY = (float)height / 2.0f;
     float maxDist = sqrtf(centerX * centerX + centerY * centerY);
-
-    for (unsigned int y = 0; y < height; y++) {
+    for (unsigned int y = 0; y < height; y++)
         for (unsigned int x = 0; x < width; x++) {
             float dx = (float)x - centerX;
             float dy = (float)y - centerY;
@@ -281,15 +282,15 @@ CCCP_Surface CCCP_SurfaceFromRadialGradient(unsigned int width, unsigned int hei
             };
             CCCP_SetPixel(surface, x, y, color);
         }
-    }
     return surface;
 }
 
 CCCP_Surface CCCP_SurfaceFromDiagonalGradient(unsigned int width, unsigned int height, color_t startColor, color_t endColor) {
     CCCP_Surface surface = CCCP_NewSurface(width, height, (color_t){0.0f, 0.0f, 0.0f, 1.0f});
-    if (!surface) return NULL;
+    if (!surface)
+        return NULL;
 
-    for (unsigned int y = 0; y < height; y++) {
+    for (unsigned int y = 0; y < height; y++)
         for (unsigned int x = 0; x < width; x++) {
             float t = ((float)x / (float)(width - 1) + (float)y / (float)(height - 1)) / 2.0f;
             color_t color = {
@@ -300,62 +301,61 @@ CCCP_Surface CCCP_SurfaceFromDiagonalGradient(unsigned int width, unsigned int h
             };
             CCCP_SetPixel(surface, x, y, color);
         }
-    }
     return surface;
 }
 
 CCCP_Surface CCCP_SurfaceFromCheckerboard(unsigned int width, unsigned int height, color_t color1, color_t color2, unsigned int squareSize) {
     CCCP_Surface surface = CCCP_NewSurface(width, height, (color_t){0.0f, 0.0f, 0.0f, 1.0f});
-    if (!surface) return NULL;
+    if (!surface)
+        return NULL;
 
-    for (unsigned int y = 0; y < height; y++) {
+    for (unsigned int y = 0; y < height; y++)
         for (unsigned int x = 0; x < width; x++) {
             unsigned int gridX = x / squareSize;
             unsigned int gridY = y / squareSize;
             color_t color = ((gridX + gridY) % 2 == 0) ? color1 : color2;
             CCCP_SetPixel(surface, x, y, color);
         }
-    }
     return surface;
 }
 
 CCCP_Surface CCCP_SurfaceFromHorizontalStripes(unsigned int width, unsigned int height, color_t color1, color_t color2, unsigned int stripeWidth) {
     CCCP_Surface surface = CCCP_NewSurface(width, height, (color_t){0.0f, 0.0f, 0.0f, 1.0f});
-    if (!surface) return NULL;
+    if (!surface)
+        return NULL;
 
-    for (unsigned int y = 0; y < height; y++) {
+    for (unsigned int y = 0; y < height; y++)
         for (unsigned int x = 0; x < width; x++) {
             unsigned int stripeIndex = y / stripeWidth;
             color_t color = (stripeIndex % 2 == 0) ? color1 : color2;
             CCCP_SetPixel(surface, x, y, color);
         }
-    }
     return surface;
 }
 
 CCCP_Surface CCCP_SurfaceFromVerticalStripes(unsigned int width, unsigned int height, color_t color1, color_t color2, unsigned int stripeWidth) {
     CCCP_Surface surface = CCCP_NewSurface(width, height, (color_t){0.0f, 0.0f, 0.0f, 1.0f});
-    if (!surface) return NULL;
+    if (!surface)
+        return NULL;
 
-    for (unsigned int y = 0; y < height; y++) {
+    for (unsigned int y = 0; y < height; y++)
         for (unsigned int x = 0; x < width; x++) {
             unsigned int stripeIndex = x / stripeWidth;
             color_t color = (stripeIndex % 2 == 0) ? color1 : color2;
             CCCP_SetPixel(surface, x, y, color);
         }
-    }
     return surface;
 }
 
 CCCP_Surface CCCP_SurfaceFromConcentricCircles(unsigned int width, unsigned int height, color_t centerColor, color_t edgeColor, unsigned int numRings) {
     CCCP_Surface surface = CCCP_NewSurface(width, height, (color_t){0.0f, 0.0f, 0.0f, 1.0f});
-    if (!surface) return NULL;
+    if (!surface)
+        return NULL;
 
     float centerX = (float)width / 2.0f;
     float centerY = (float)height / 2.0f;
     float maxDist = sqrtf(centerX * centerX + centerY * centerY);
-
-    for (unsigned int y = 0; y < height; y++) {
+    for (unsigned int y = 0; y < height; y++)
         for (unsigned int x = 0; x < width; x++) {
             float dx = (float)x - centerX;
             float dy = (float)y - centerY;
@@ -364,7 +364,58 @@ CCCP_Surface CCCP_SurfaceFromConcentricCircles(unsigned int width, unsigned int 
             color_t color = (fmodf(ringIndex, 2.0f) < 1.0f) ? centerColor : edgeColor;
             CCCP_SetPixel(surface, x, y, color);
         }
-    }
     return surface;
+}
+
+static void render_char(CCCP_Surface surface, int x, int y, const char bitmap[8], color_t color) {
+    for (int px = 0; px < 8; px++)
+        for (int py = 0; py < 8; py++)
+            if (bitmap[px] & (1 << py))
+                CCCP_SetPixel(surface, x + px, y + py, color);
+}
+
+void CCCP_DebugPrintASCII(CCCP_Surface surface, int x, int y, const char* text, color_t color) {
+    while (*text) {
+        unsigned char c = (unsigned char)*text;
+        render_char(surface, x, y, font8x8_basic[c], color);
+        x += 8;
+        text++;
+    }
+}
+
+void CCCP_DebugPrintUnicode(CCCP_Surface surface, int x, int y, const wchar_t* text, color_t color) {
+    int start_x = x;
+    while (*text) {
+        if (*text == L'\n') {
+            x = start_x;
+            y += 8;
+        } else if (*text == L'\t')
+            x += 32; // 4 spaces
+        else if (*text == L'\r')
+            x = start_x;
+        else {
+            unsigned int code = (unsigned int)*text;
+            const char* bitmap = NULL;
+            if (code >= 0x0000 && code <= 0x007F)
+                bitmap = font8x8_basic[code];
+            else if (code >= 0x0080 && code <= 0x009F)
+                bitmap = font8x8_control[code - 0x0080];
+            else if (code >= 0x00A0 && code <= 0x00FF)
+                bitmap = font8x8_ext_latin[code - 0x00A0];
+            else if (code >= 0x0390 && code <= 0x03C9)
+                bitmap = font8x8_greek[code - 0x0390];
+            else if (code >= 0x2500 && code <= 0x257F)
+                bitmap = font8x8_box[code - 0x2500];
+            else if (code >= 0x2580 && code <= 0x259F)
+                bitmap = font8x8_block[code - 0x2580];
+            else if (code >= 0x3040 && code <= 0x309F)
+                bitmap = font8x8_hiragana[code - 0x3040];
+            else
+                bitmap = font8x8_basic[32];
+            render_char(surface, x, y, bitmap, color);
+            x += 8;
+        }
+        text++;
+    }
 }
 

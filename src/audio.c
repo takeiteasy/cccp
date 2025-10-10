@@ -1,4 +1,5 @@
 #include "cccp.h"
+#include "../deps/raudio.c"
 
 void CCCP_SetMasterVolume(CCCP_AudioContext* ctx, float volume) {
     if (ctx)

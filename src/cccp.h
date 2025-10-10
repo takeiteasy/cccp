@@ -92,7 +92,6 @@ typedef vec4(*CCCP_ShaderFunc)(vec2, vec2, float, void*);
 typedef struct {
     CCCP_ShaderFunc func;
     int thread_count; // 0 = use hardware concurrency
-    thrd_pool_t *pool;
 } CCCP_Shader;
 
 typedef struct CCCP_HashEntry {
@@ -177,7 +176,10 @@ CCCP_Surface CCCP_SurfaceFromConcentricCircles(unsigned int width, unsigned int 
 
 CCCP_Shader CCCP_NewShader(CCCP_ShaderFunc func, int numThreads);
 void CCCP_DestroyShader(CCCP_Shader *shader);
-void CCCP_ApplyShader(CCCP_Surface surface, CCCP_Shader *shader, void* userdata);
+bool CCCP_ApplyShader(CCCP_Surface surface, CCCP_Shader *shader, void* userdata);
+
+void CCCP_DebugPrintASCII(CCCP_Surface surface, int x, int y, const char* text, color_t color);
+void CCCP_DebugPrintUnicode(CCCP_Surface surface, int x, int y, const wchar_t* text, color_t color);
 
 /* === AUDIO === */
 
