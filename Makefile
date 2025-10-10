@@ -40,6 +40,11 @@ veryclean:
 	$(RM) $(OBJS)
 	$(RM) -r $(BIN)/**
 
+docs:
+	@headerdoc2html src/cccp.h -o docs/; \
+	mv docs/cccp_h/*.html docs/; \
+	rm -rf docs/cccp_h
+
 FORCE: ;
 
 $(BIN)/%.$(LIBEXT): $(SCENES)/%.c FORCE | $(BIN)
@@ -49,4 +54,4 @@ scenes: $(TARGETS)
 
 all: veryclean $(OUT) scenes clean
 
-.PHONY: clean veryclean all scenes run
+.PHONY: clean veryclean all scenes run docs
