@@ -34,8 +34,8 @@ extern "C" {
 #include <stdint.h>
 #include <stddef.h>
 #include <stdbool.h>
-#include <stdlib.h>
 #include <math.h>
+#include <stdlib.h>
 
 /*! @typedef color_t
     @brief Represents a color with red, green, blue, and alpha components.
@@ -2035,10 +2035,10 @@ color_t color_fast_invert(color_t color);          // Bitwise invert
 #endif // PAUL_COLOR_H
 
 #if defined(PAUL_COLOR_IMPLEMENTATION) || defined(PAUL_IMPLEMENTATION)
+#define _RGBA(R, G, B, A) (((unsigned int)(R) << 24) | ((unsigned int)(B) << 16) | ((unsigned int)(G) << 8) | (A))
 #define _MIN(A, B) ((A) < (B) ? (A) : (B))
 #define _MAX(A, B) ((A) > (B) ? (A) : (B))
 #define _CLAMP(x, low, high) _MIN(_MAX(x, low), high)
-#define _RGBA(R, G, B, A) (((unsigned int)(R) << 24) | ((unsigned int)(B) << 16) | ((unsigned int)(G) << 8) | (A))
 #define _CLAMP_UINT8(V) ((uint8_t)_CLAMP((V), 0, 255))
 #define _CLAMP_FLOAT(V) ((float)_CLAMP((V), 0.0f, 1.0f))
 #define _CLAMP_FLOAT_RANGE(V, _MINV, _MAXV) (fminf(fmaxf(V, _MINV), _MAXV))

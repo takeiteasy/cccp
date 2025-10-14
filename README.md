@@ -1,4 +1,4 @@
-# CCCP 
+# cccp 
 
 The **C** **C**reative **C**oding **P**roject (CCCP) is a simple, cross-platform framework for making creative coding projects in C. It provides hot-reloading of scenes, window + input handling, multithreaded software shaders, audio playback, image loading, and text rendering.
 
@@ -60,8 +60,8 @@ make all
 
 ## Dependencies
 
-- [nothings/stb](https://github.com/nothings/stb/)
-    - stb_vorbis.c, stb_truetype.h, stb_image.h, stb_image_write.h [Public Domain]
+- [nothings/stb](https://github.com/nothings/stb/) [Public Domain]
+    - stb_vorbis.c, stb_truetype.h, stb_image.h, stb_image_write.h
 - [phoboslab/qoi](https://github.com/phoboslab/qoi) [MIT]
 - [phoboslab/qoa](https://github.com/phoboslab/qoa) [MIT]
 - [dhepper/font8x8](https://github.com/dhepper/font8x8/blob/master/font8x8_basic.h) [Public Domain]
@@ -70,6 +70,7 @@ make all
 - [raysan5/raudio](https://github.com/raysan5/raudio) [zlib/libpng]
     - [mackron/miniaudio](https://github.com/mackron/miniaudio) [Public Domain]
     - [mackron/dr_libs](https://github.com/mackron/dr_libs) [Public Domain]
+        - dr_wav.h, dr_flac.h, dr_mp3.h
     - jar_xm.h by Romain "Artefact2" Dalmaso [WTFPL]
     - jar_mod.h by Romain "Artefact2" Dalmaso [Public Domain]
 

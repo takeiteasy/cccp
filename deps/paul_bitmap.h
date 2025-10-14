@@ -33,12 +33,28 @@ extern "C" {
 #include <stdint.h>
 #include <stddef.h>
 #include <stdbool.h>
+#ifdef _WIN32
+#include <io.h>
+#include <dirent.h>
+#define F_OK 0
+#define access _access
+#else
+#include <unistd.h>
+#endif
+#include <assert.h>
+#include <math.h>
+#include <stdlib.h>
+#include <string.h>
+#include <ctype.h>
 
 #ifndef PAUL_COLOR_HEADER
 #ifndef __has_include
 #define __has_include(x) 0
 #endif
 #if __has_include("paul_color.h")
+#if defined(PAUL_BITMAP_IMPLEMENTATION) && !(defined(PAUL_COLOR_IMPLEMENTATION) || defined(PAUL_IMPLEMENTATION))
+#define PAUL_COLOR_IMPLEMENTATION
+#endif
 #include "paul_color.h"
 #else
 /*! @typedef color_t
@@ -219,17 +235,6 @@ bool bitmap_rotate(bitmap_t *src, float angle);
 bool bitmap_clip(bitmap_t *src, int rx, int ry, int rw, int rh);
 
 /*!
- * @function bitmap_flip
- * @brief Flips an image in-place horizontally and/or vertically.
- * @discussion Mirrors the image along the horizontal axis, vertical axis, or both, depending on the parameters. The original image content is modified.
- * @param src Pointer to the image to flip (will be modified).
- * @param horizontal Non-zero to flip horizontally, zero to keep original orientation.
- * @param vertical Non-zero to flip vertically, zero to keep original orientation.
- * @return true if successful, false if image is invalid.
- */
-bool bitmap_flip(bitmap_t *src, int horizontal, int vertical);
-
-/*!
  * @function bitmap_dupe
  * @brief Creates a duplicate copy of an image.
  * @discussion Allocates a new image with the same dimensions and pixel data as the source image. The returned image is independent and must be freed with bitmap_destroy() when no longer needed.
@@ -282,6 +287,19 @@ bitmap_t bitmap_clipped(bitmap_t src, int rx, int ry, int rw, int rh);
  * @return A new flipped image, or NULL on allocation failure.
 */
 bitmap_t bitmap_flipped(bitmap_t src, int horizontal, int vertical);
+
+/*!
+ * @function bitmap_clipped
+ * @brief Creates a new image from a rectangular region of another image.
+ * @discussion Allocates a new image containing only the specified rectangular region from the source image. The original image remains unchanged.
+ * @param src The source image to clip from.
+ * @param rx The x-coordinate of the region in the source image.
+ * @param ry The y-coordinate of the region in the source image.
+ * @param rw The width of the region.
+ * @param rh The height of the region.
+ * @return A new image containing the clipped region, or NULL on allocation failure.
+*/
+bitmap_t bitmap_clipped(bitmap_t src, int rx, int ry, int rw, int rh);
 
 /*!
  * @function bitmap_dominant_color
@@ -420,37 +438,20 @@ bitmap_t bitmap_load(const void* data, int width, int height, bitmap_format_t fo
 #endif // PAUL_BITMAP_HEADER
 
 #if defined(PAUL_BITMAP_IMPLEMENTATION) || defined(PAUL_IMPLEMENTATION)
-#ifdef _WIN32
-#include <io.h>
-#include <dirent.h>
-#define F_OK 0
-#define access _access
-#else
-#include <unistd.h>
-#endif
-#include <assert.h>
-#include <math.h>
-#include <stdlib.h>
-#include <string.h>
-#include <ctype.h>
-
 #define _RADIANS(N) (((double)(N)) * (M_PI / 180.))
 #define _MIN(A, B) ((A) < (B) ? (A) : (B))
 #define _MAX(A, B) ((A) > (B) ? (A) : (B))
 #define _CLAMP(x, low, high) _MIN(_MAX(x, low), high)
 #define _SWAP(A, B) ((A)^=(B)^=(A)^=(B))
+
 static _CONSTEXPR color_t _black = { 0.0f, 0.0f, 0.0f, 1.0f };
 
 #ifndef PAUL_COLOR_HEADER
-float color_distance(color_t a, color_t b) {
+static float color_distance(color_t a, color_t b) {
     int dr = a.r - b.r;
     int dg = a.g - b.g;
     int db = a.b - b.b;
     return sqrtf(dr*dr + dg*dg + db*db);
-}
-
-color_t rgb(uint8_t r, uint8_t g, uint8_t b) {
-    return rgba(r, g, b, 255);
 }
 #endif
 
@@ -470,7 +471,7 @@ bitmap_t bitmap_empty(unsigned int w, unsigned int h, color_t color) {
     bitmap_t result = bitmap_make(w, h);
     if (!result)
         return NULL;
-    bitmap_fill(result, color);
+    bitmap_fill(result, _black);
     return result;
 }
 
@@ -744,6 +745,48 @@ bool bitmap_rotate(bitmap_t *src, float angle) {
     return true;
 }
 
+bool bitmap_flip(bitmap_t *src, int horizontal, int vertical) {
+    if (!src || !*src || (!horizontal && !vertical))
+        return false;
+    int w, h;
+    bitmap_size(*src, &w, &h);
+    if (w <= 0 || h <= 0)
+        return false;
+    bitmap_t result = bitmap_make(w, h);
+    if (!result)
+        return false;
+    int x, y, sx, sy;
+    for (x = 0; x < w; ++x)
+        for (y = 0; y < h; ++y) {
+            sx = horizontal ? (w - 1 - x) : x;
+            sy = vertical   ? (h - 1 - y) : y;
+            bitmap_pset(result, x, y, bitmap_pget(*src, sx, sy));
+        }
+    bitmap_destroy(*src);
+    *src = result;
+    return true;
+}
+
+bitmap_t bitmap_flipped(bitmap_t src, int horizontal, int vertical) {
+    if (!src || (!horizontal && !vertical))
+        return NULL;
+    int w, h;
+    bitmap_size(src, &w, &h);
+    if (w <= 0 || h <= 0)
+        return NULL;
+    bitmap_t result = bitmap_make(w, h);
+    if (!result)
+        return NULL;
+    int x, y, sx, sy;
+    for (x = 0; x < w; ++x)
+        for (y = 0; y < h; ++y) {
+            sx = horizontal ? (w - 1 - x) : x;
+            sy = vertical   ? (h - 1 - y) : y;
+            bitmap_pset(result, x, y, bitmap_pget(src, sx, sy));
+        }
+    return result;
+}
+
 bitmap_t bitmap_clipped(bitmap_t src, int rx, int ry, int rw, int rh) {
     if (!src || rw <= 0 || rh <= 0 || rx < 0 || ry < 0)
         return NULL;
@@ -787,48 +830,6 @@ bool bitmap_clip(bitmap_t *src, int rx, int ry, int rw, int rh) {
     bitmap_destroy(*src);
     *src = result;
     return true;
-}
-
-bool bitmap_flip(bitmap_t *src, int horizontal, int vertical) {
-    if (!src || !*src || (!horizontal && !vertical))
-        return false;
-    int w, h;
-    bitmap_size(*src, &w, &h);
-    if (w <= 0 || h <= 0)
-        return false;
-    bitmap_t result = bitmap_make(w, h);
-    if (!result)
-        return false;
-    int x, y, sx, sy;
-    for (x = 0; x < w; ++x)
-        for (y = 0; y < h; ++y) {
-            sx = horizontal ? (w - 1 - x) : x;
-            sy = vertical   ? (h - 1 - y) : y;
-            bitmap_pset(result, x, y, bitmap_pget(*src, sx, sy));
-        }
-    bitmap_destroy(*src);
-    *src = result;
-    return true;
-}
-
-bitmap_t bitmap_flipped(bitmap_t src, int horizontal, int vertical) {
-    if (!src || (!horizontal && !vertical))
-        return NULL;
-    int w, h;
-    bitmap_size(src, &w, &h);
-    if (w <= 0 || h <= 0)
-        return NULL;
-    bitmap_t result = bitmap_make(w, h);
-    if (!result)
-        return NULL;
-    int x, y, sx, sy;
-    for (x = 0; x < w; ++x)
-        for (y = 0; y < h; ++y) {
-            sx = horizontal ? (w - 1 - x) : x;
-            sy = vertical   ? (h - 1 - y) : y;
-            bitmap_pset(result, x, y, bitmap_pget(src, sx, sy));
-        }
-    return result;
 }
 
 static inline void vline(bitmap_t img, int w, int h, int x, int y0, int y1, color_t color) {
